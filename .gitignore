@@ -1,3 +1,8 @@
+# only push code for safe-keeping for now
+processed_syllabi/
+raw_syllabi/
+
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
