@@ -1,6 +1,6 @@
-
 import json
 import os
+import logging
 
 CORRECTIONS_FILE = r"processed_syllabi\metadata_corrections.json"
 
@@ -37,7 +37,7 @@ def update_metadata_corrections(document_data):
             "source": document_data.get("source", "Unknown"),
             "flag": document_data.get("flag", "Unknown")
         }
-        print(f"New metadata added for: {doc_title}")
+        logging.info(f"New metadata added for: {doc_title}")
 
     save_metadata_corrections(metadata_corrections)
 

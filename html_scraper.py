@@ -5,6 +5,7 @@ import re
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 import time
+import logging
 
 def get_html_soup(url):
     """Fetches HTML content from a URL and returns a BeautifulSoup object for parsing."""
@@ -13,10 +14,10 @@ def get_html_soup(url):
         if response.status_code == 200:
             return BeautifulSoup(response.text, "html.parser")
         else:
-            print(f"Error {response.status_code}: Failed to fetch {url}")
+            logging.warning(f"Error {response.status_code}: Failed to fetch {url}")
             return None
     except requests.RequestException as e:
-        print(f"Request failed: {e}")
+        logging.warning(f"Request failed: {e}")
         return None
 
 def extract_author(article, soup):
@@ -68,7 +69,7 @@ def extract_html_text(soup, debug=False):
             # If any whole word in the paragraph exactly matches an ignore keyword, skip it.
             if pattern.search(text):
                 if debug:
-                    print(f"Skipping paragraph due to keyword match: '{text}'")
+                    logging.debug(f"Skipping paragraph due to keyword match: '{text}'")
                 continue
             paragraphs.append(text)
     
@@ -84,6 +85,7 @@ def scrape_au_course(url):
     options.add_argument("--headless")
     options.add_argument("--disable-gpu")
     options.add_argument("--window-size=1920,1080")
+    options.add_argument("--log-level=3")  # Only log errors
     
     # chromedriver should load automatically, otherwise make sure you have the correct one in your PATH.
     driver = webdriver.Chrome(options=options)
@@ -100,10 +102,10 @@ def scrape_au_course(url):
     # Find the container with the course description
     container = soup.find("main")
     if container:
-        print("Found course description container.")
+        logging.info("Found course description container.")
         return container.get_text(separator="\n", strip=True)
     else:
-        print("Course description container not found. Returning full page text.")
+        logging.debug("Course description container not found. Returning full page text.")
         return soup.get_text(separator="\n", strip=True)
 
 def scrape_html_standard(url):
@@ -118,13 +120,13 @@ def scrape_html_standard(url):
         article.download()
         article.parse()
     except Exception as e:
-        print(f"Error parsing article: {e}")
+        logging.warning(f"Error parsing article: {e}")
         return None
     
     text = extract_html_text(soup, debug = True)
 
     if not text.strip():
-        print(f"Warning: No text extracted from {url}")
+        logging.warning(f"Warning: No text extracted from {url}")
         flag = "empty_text"
     else:
         flag = ""
@@ -150,12 +152,12 @@ def scrape_html(url):
         text = scrape_au_course(url)
 
         if not text.strip():
-            print(f"Warning: No text extracted from {url}")
+            logging.warning(f"Warning: No text extracted from {url}")
             flag = "empty_text"
         else:
             flag = ""
 
-        print("Detected AU course page; using dynamic scraper")
+        logging.info("Detected AU course page; using dynamic scraper")
 
         data = {
             "document_type": "AU_course_page",
@@ -167,6 +169,7 @@ def scrape_html(url):
         }
 
         return data
+    
     else:
         soup = get_html_soup(url)
         article = Article(url)
@@ -175,13 +178,13 @@ def scrape_html(url):
             article.download()
             article.parse()
         except Exception as e:
-            print(f"Error parsing article: {e}")
+            logging.warning(f"Error parsing article: {e}")
             return None
         
         text = extract_html_text(soup, debug = True)
 
         if not text.strip():
-            print(f"Warning: No text extracted from {url}")
+            logging.warning(f"Warning: No text extracted from {url}")
             flag = "empty_text"
         else:
             flag = ""

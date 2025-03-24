@@ -1,12 +1,32 @@
 import os
+import logging
+
+# Create a root logger and set its level to DEBUG to capture all messages.
+logger = logging.getLogger()
+logger.setLevel(logging.DEBUG)
+
+# Create a file handler that logs everything (DEBUG and above)
+file_handler = logging.FileHandler("processed_syllabi/global_output_log.txt", mode='w', encoding='utf-8')
+file_handler.setLevel(logging.DEBUG)
+file_formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+file_handler.setFormatter(file_formatter)
+
+# Create a stream handler that logs only INFO and above (so debug messages aren't printed to terminal)
+stream_handler = logging.StreamHandler()
+stream_handler.setLevel(logging.INFO)
+stream_formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+stream_handler.setFormatter(stream_formatter)
+
+# Add both handlers to the root logger.
+logger.addHandler(file_handler)
+logger.addHandler(stream_handler)
+
 from html_scraper import scrape_html
 from pdf_processor import scrape_pdf
 from metadata_handler import update_metadata_corrections
 from utils import clean_filename
 import json
 import sys
-from contextlib import redirect_stdout
-
 
 def parse_materials_paths(file_path):
     """
@@ -64,7 +84,7 @@ def save_scraped_data(course_name, document_data, page_range=None):
     with open(save_path, "w", encoding="utf-8") as f:
         json.dump(document_data, f, indent=4, ensure_ascii=False)
 
-    print(f"Saved: {save_path}")
+    logging.info(f"Saved: {save_path}")
 
 
 def process_course_syllabi(course_name):
@@ -76,7 +96,7 @@ def process_course_syllabi(course_name):
     materials = parse_materials_paths(materials_file)
 
     for material in materials:
-        print(f"Processing: {material['path']}")
+        logging.info(f"Processing: {material['path']}")
 
         if material["path"].endswith(".pdf"):
             pdf_data = scrape_pdf(
@@ -90,22 +110,20 @@ def process_course_syllabi(course_name):
         elif material["path"].startswith("http"):
             html_data = scrape_html(material["path"])
             save_scraped_data(course_name, html_data)
-        print('')
+        logging.info('')
     return
 
 
 if __name__ == "__main__":
-    #courses = ['Human_computer_interaction', 'Natural_language_processing']
-    courses = ['Natural_language_processing']
+
+    courses = ['Human_computer_interaction', 'Natural_language_processing', 'Adv_cog_neuroscience', 'Adv_cognitive_modelling', 'Data_science', 'Decision_making']
+    #courses = ['Adv_cog_neuroscience']
 
     for course in courses:
         os.makedirs(f"processed_syllabi/{course}", exist_ok=True)
 
-        #with open(f"processed_syllabi/{course}/output_log.txt", "w", encoding="utf-8") as f:
-        #    with redirect_stdout(f):
-        print(f'Beginning processing of: {course}')
+        logging.info(f'Beginning processing of: {course}')
         
-        # everything printed with print() will go into output_log.txt
         process_course_syllabi(f"{course}")
 
-        print(f'Finished processing of: {course}')
+        logging.info(f'Finished processing of: {course}')
