@@ -72,7 +72,7 @@ def process_course_syllabi(course_name):
     Processes course materials, distinguishing between books, research papers, and articles.
     Saves extracted data in a structured format.
     """
-    materials_file = f"raw_syllabi/master_courses/{course_name}/materials_paths_test.txt"
+    materials_file = f"raw_syllabi/master_courses/{course_name}/materials_paths.txt"
     materials = parse_materials_paths(materials_file)
 
     for material in materials:
@@ -84,6 +84,7 @@ def process_course_syllabi(course_name):
                 page_range=material["page_range"], 
                 true_page_1=material["true_page_1"]
             )
+
             save_scraped_data(course_name, pdf_data, page_range=material["page_range"])
 
         elif material["path"].startswith("http"):
@@ -94,8 +95,17 @@ def process_course_syllabi(course_name):
 
 
 if __name__ == "__main__":
-    with open(f"processed_syllabi/Human_computer_interaction/output_log.txt", "w", encoding="utf-8") as f:
-        with redirect_stdout(f):
-            
-            # everything printed with print() will go into output_log.txt
-            process_course_syllabi("Human_computer_interaction")
+    #courses = ['Human_computer_interaction', 'Natural_language_processing']
+    courses = ['Natural_language_processing']
+
+    for course in courses:
+        os.makedirs(f"processed_syllabi/{course}", exist_ok=True)
+
+        #with open(f"processed_syllabi/{course}/output_log.txt", "w", encoding="utf-8") as f:
+        #    with redirect_stdout(f):
+        print(f'Beginning processing of: {course}')
+        
+        # everything printed with print() will go into output_log.txt
+        process_course_syllabi(f"{course}")
+
+        print(f'Finished processing of: {course}')

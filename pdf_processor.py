@@ -157,7 +157,7 @@ def scrape_pdf(pdf_path, page_range=None, true_page_1=None):
     text = extract_pdf_full_text(pdf_path, page_range, true_page_1, header_footer_margin=33.5, debug = True)
 
     # title can't be unknown, to not override. fallback to file name
-    if title == 'Unknown':
+    if title == 'Unknown' or title == '':
         title = Path(pdf_path).stem
 
     # add a warning if no text was scraped
