@@ -1,6 +1,7 @@
 import json
 import os
 import logging
+from logging_config import logger  # Import the shared logger
 
 CORRECTIONS_FILE = r"processed_syllabi\metadata_corrections.json"
 
@@ -25,11 +26,11 @@ def update_metadata_corrections(document_data):
     - If already exists, keep the existing manual corrections.
     """
     metadata_corrections = load_metadata_corrections()
-    doc_title = document_data["title"]
+    doc_source = document_data["source"]
 
     # Add document if it does not exist
-    if doc_title not in metadata_corrections:
-        metadata_corrections[doc_title] = {
+    if doc_source not in metadata_corrections:
+        metadata_corrections[doc_source] = {
             "title": document_data["title"],
             "author": document_data.get("author", "Unknown"),
             "date_published": document_data.get("date_published", "Unknown"),
@@ -37,7 +38,7 @@ def update_metadata_corrections(document_data):
             "source": document_data.get("source", "Unknown"),
             "flag": document_data.get("flag", "Unknown")
         }
-        logging.info(f"New metadata added for: {doc_title}")
+        logger.info(f"New metadata added for: {doc_source}")
 
     save_metadata_corrections(metadata_corrections)
 

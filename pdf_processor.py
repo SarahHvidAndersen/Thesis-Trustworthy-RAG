@@ -5,6 +5,7 @@ import os
 from pathlib import Path
 from metadata_handler import update_metadata_corrections
 import logging
+from logging_config import logger
 
 def extract_pdf_metadata(pdf_path):
     """Extracts metadata (title, author, date) from a PDF file."""
@@ -18,7 +19,7 @@ def extract_pdf_metadata(pdf_path):
             if metadata:
                 # Print all metadata keys for debugging
                 for key, value in metadata.items():
-                    logging.debug(f"   pypdf* {key}: {value}")
+                    logger.debug(f"   pypdf* {key}: {value}")
 
             title = metadata.get("/Title", "Unknown")
             author = metadata.get("/Author", "Unknown")
@@ -29,7 +30,7 @@ def extract_pdf_metadata(pdf_path):
             if date_published.startswith("D:"):
                 date_published = f"{date_published[2:6]}-{date_published[6:8]}-{date_published[8:10]}"
     except Exception as e:
-        logging.warning(f"Error extracting metadata with PyPDF: {e}")
+        logger.warning(f"Error extracting metadata with PyPDF: {e}")
 
     return title.strip(), author.strip(), date_published.strip(), keywords.strip()
 
@@ -46,7 +47,7 @@ def pymupdf_extract_pdf_metadata(pdf_path):
             if metadata:
                 # Print all metadata keys for debugging
                 for key, value in metadata.items():
-                    logging.debug(f"   pymupdf* {key}: {value}")
+                    logger.debug(f"   pymupdf* {key}: {value}")
 
             title = metadata.get("/title", "Unknown")
             author = metadata.get("/author", "Unknown")
@@ -57,7 +58,7 @@ def pymupdf_extract_pdf_metadata(pdf_path):
             if date_published.startswith("D:"):
                 date_published = f"{date_published[2:6]}-{date_published[6:8]}-{date_published[8:10]}"
     except Exception as e:
-        logging.warning(f"Error extracting metadata with PyPDF: {e}")
+        logger.warning(f"Error extracting metadata with PyPDF: {e}")
 
     return title.strip(), author.strip(), date_published.strip(), keywords.strip()
 
@@ -110,7 +111,7 @@ def extract_pdf_full_text(pdf_path, page_range=None, true_page_1=None, header_fo
         page_dict = page.get_text("dict")
         page_height = page.rect.height
         #if debug:
-        #    logging.debug(f"\nProcessing page {page_num} (height: {page_height})")
+        #    logger.debug(f"\nProcessing page {page_num} (height: {page_height})")
         for block in page_dict["blocks"]:
             bbox = block["bbox"]
             # Skip header/footer blocks based on vertical margins.
@@ -123,7 +124,7 @@ def extract_pdf_full_text(pdf_path, page_range=None, true_page_1=None, header_fo
                             if text:
                                 block_debug_text += text + " "
                     block_debug_text = block_debug_text.strip()
-                    logging.debug(f"Skipping block with bbox {bbox}. Text: '{block_debug_text}'")
+                    logger.debug(f"Skipping block with bbox {bbox}. Text: '{block_debug_text}'")
                 continue
             # Combine text from all spans in the block.
             block_text = ""
@@ -138,7 +139,7 @@ def extract_pdf_full_text(pdf_path, page_range=None, true_page_1=None, header_fo
             # Stop processing if the block's text exactly equals "references".
             if block_text.lower().strip() == "references":
                 if debug:
-                    logging.debug(f"Encountered 'References' block: '{block_text}'. Stopping processing.")
+                    logger.debug(f"Encountered 'References' block: '{block_text}'. Stopping processing.")
                 stop_processing = True
                 break
             # Append the block text to the full text.
@@ -163,7 +164,7 @@ def scrape_pdf(pdf_path, page_range=None, true_page_1=None):
 
     # add a warning if no text was scraped
     if not text.strip():
-        logging.warning(f"Warning: No text extracted from {pdf_path}")
+        logger.warning(f"Warning: No text extracted from {pdf_path}")
         flag = "empty_text"
     else:
         flag = ""

@@ -1,32 +1,12 @@
 import os
 import logging
-
-# Create a root logger and set its level to DEBUG to capture all messages.
-logger = logging.getLogger()
-logger.setLevel(logging.DEBUG)
-
-# Create a file handler that logs everything (DEBUG and above)
-file_handler = logging.FileHandler("processed_syllabi/global_output_log.txt", mode='w', encoding='utf-8')
-file_handler.setLevel(logging.DEBUG)
-file_formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
-file_handler.setFormatter(file_formatter)
-
-# Create a stream handler that logs only INFO and above (so debug messages aren't printed to terminal)
-stream_handler = logging.StreamHandler()
-stream_handler.setLevel(logging.INFO)
-stream_formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
-stream_handler.setFormatter(stream_formatter)
-
-# Add both handlers to the root logger.
-logger.addHandler(file_handler)
-logger.addHandler(stream_handler)
-
 from html_scraper import scrape_html
 from pdf_processor import scrape_pdf
 from metadata_handler import update_metadata_corrections
-from utils import clean_filename
+from utils import get_stable_filename
 import json
 import sys
+from logging_config import logger
 
 def parse_materials_paths(file_path):
     """
@@ -62,29 +42,24 @@ def parse_materials_paths(file_path):
 
 def save_scraped_data(course_name, document_data, page_range=None):
     """Saves extracted data into a JSON file with correct metadata and page range tracking."""
-    os.makedirs(f"processed_syllabi/{course_name}/scraped_data", exist_ok=True)
 
-    doc_title = clean_filename(document_data["title"])
-    doc_title = doc_title.replace(" ", "_").lower()
+    os.makedirs(f"processed_syllabi\\{course_name}\\scraped_data", exist_ok=True)
 
-    # Append page range to filename if applicable
-    if page_range:
-        page_range = str(page_range).replace(',', '-')
-        page_range_str = f"_page-{page_range.translate(str.maketrans('', '', "() "))}" 
-        doc_title += page_range_str
+    output_dir = f"processed_syllabi\\{course_name}\\scraped_data"
 
-    save_path = f"processed_syllabi/{course_name}/scraped_data/{doc_title}.json"
+    # create clean and stable filename, that prevents articles with the same title from overwriting
+    save_path = get_stable_filename(output_dir, document_data["title"], document_data["source"], ".json", page_range)
 
     # Ensure metadata corrections are applied & new entries are added
     metadata_corrections = update_metadata_corrections(document_data)
-    if document_data["title"] in metadata_corrections:
-        document_data.update(metadata_corrections[document_data["title"]])
+    if document_data["source"] in metadata_corrections:
+        document_data.update(metadata_corrections[document_data["source"]])
 
     # Save data
     with open(save_path, "w", encoding="utf-8") as f:
         json.dump(document_data, f, indent=4, ensure_ascii=False)
 
-    logging.info(f"Saved: {save_path}")
+    logger.info(f"Saved: {save_path}")
 
 
 def process_course_syllabi(course_name):
@@ -96,7 +71,7 @@ def process_course_syllabi(course_name):
     materials = parse_materials_paths(materials_file)
 
     for material in materials:
-        logging.info(f"Processing: {material['path']}")
+        logger.info(f"Processing: {material['path']}")
 
         if material["path"].endswith(".pdf"):
             pdf_data = scrape_pdf(
@@ -110,20 +85,20 @@ def process_course_syllabi(course_name):
         elif material["path"].startswith("http"):
             html_data = scrape_html(material["path"])
             save_scraped_data(course_name, html_data)
-        logging.info('')
+        logger.info('')
     return
 
 
 if __name__ == "__main__":
 
     courses = ['Human_computer_interaction', 'Natural_language_processing', 'Adv_cog_neuroscience', 'Adv_cognitive_modelling', 'Data_science', 'Decision_making']
-    #courses = ['Adv_cog_neuroscience']
+    #courses = ['Data_science']
 
     for course in courses:
         os.makedirs(f"processed_syllabi/{course}", exist_ok=True)
 
-        logging.info(f'Beginning processing of: {course}')
+        logger.info(f'Beginning processing of: {course}')
         
         process_course_syllabi(f"{course}")
 
-        logging.info(f'Finished processing of: {course}')
+        logger.info(f'Finished processing of: {course}')
