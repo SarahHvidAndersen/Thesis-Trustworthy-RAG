@@ -1,11 +1,9 @@
 import os
-import logging
-from html_scraper import scrape_html
-from pdf_processor import scrape_pdf
-from metadata_handler import update_metadata_corrections
-from utils import get_stable_filename
 import json
-import sys
+from scraping.html_scraper import scrape_html
+from scraping.pdf_processor import scrape_pdf
+from scraping.metadata_handler import update_metadata_corrections
+from utils import get_stable_filename
 from logging_config import logger
 
 def parse_materials_paths(file_path):

@@ -1,7 +1,6 @@
 import re
 import os
 import hashlib
-import logging
 import json
 from logging_config import logger
 

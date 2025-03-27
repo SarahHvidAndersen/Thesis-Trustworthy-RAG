@@ -1,10 +1,6 @@
-import pymupdf  # PyMuPDF
+import pymupdf  # PyMuPDF/fitz
 import pypdf
-import re
-import os
 from pathlib import Path
-from metadata_handler import update_metadata_corrections
-import logging
 from logging_config import logger
 
 def extract_pdf_metadata(pdf_path):
