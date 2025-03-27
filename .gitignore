@@ -1,5 +1,5 @@
 # only push code for safe-keeping for now
-processed_syllabi/
+
 raw_syllabi/
 setup.sh
 
