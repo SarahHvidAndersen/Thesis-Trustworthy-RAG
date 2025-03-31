@@ -1,6 +1,7 @@
 # only push code for safe-keeping for now
 
 raw_syllabi/
+processed_syllabi/
 chroma_db/
 setup.sh
 ucloud_setup.sh

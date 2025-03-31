@@ -1,4 +1,5 @@
 import requests
+import os
 from dotenv import load_dotenv
 load_dotenv()
 HF_API_KEY = os.getenv("HF_API_KEY")
@@ -47,9 +48,10 @@ def generate_answer(query: str, context: str, api_url: str, headers: dict = None
         raise Exception(f"API request failed: {response.status_code}, {response.text}")
 
 if __name__ == "__main__":
+
     # Test the generate_answer function independently.
     
-    # Sample query and context (you can replace these with your own test data).
+    # Sample query and context
     test_query = "What are the key steps in Bayesian workflow?"
     test_context = (
         "1. Data Cleaning: Removing noise and normalizing data. "
@@ -58,13 +60,11 @@ if __name__ == "__main__":
         "4. Evaluation: Assessing model performance."
     )
     
-    # Replace with your actual Hugging Face inference endpoint for a generative model.
-    # For example, you might use: "https://api-inference.huggingface.co/models/your-model-name"
-    api_url = "https://api-inference.huggingface.co/models/your-model-name"
+    # Use the Hugging Face inference endpoint for a generative model
+    api_url = "https://api-inference.huggingface.co/models/meta-llama/Meta-Llama-3-8B-Instruct"
     
-    # If you require authentication, include your API token in the headers.
-
-    headers = {"Authorization": "Bearer HF_API_KEY"}
+    # include API token in the headers for authorization
+    headers = {"Authorization": f"Bearer {HF_API_KEY}"}
     
     try:
         answer = generate_answer(test_query, test_context, api_url, headers=headers)
