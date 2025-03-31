@@ -1,7 +1,9 @@
 # only push code for safe-keeping for now
 
 raw_syllabi/
+chroma_db/
 setup.sh
+ucloud_setup.sh
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

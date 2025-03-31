@@ -3,14 +3,14 @@ import json
 from tqdm import tqdm
 import torch
 import torch.nn.functional as F
-from sentence_transformers import SentenceTransformer
+#from sentence_transformers import SentenceTransformer
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 
 from embedding_process.preprocessing import clean_text 
 from embedding_process.embeddings import load_embedding_model, embed_text
-#from embedding_process.vector_db import init_db, get_collection, add_documents
+from embedding_process.vector_db import init_db, get_collection, add_documents
 
-def process_file(filepath, chunk_size=2048, chunk_overlap=200):
+def process_file(filepath, course, chunk_size=2048, chunk_overlap=200):
     """
     Reads a scraped JSON file (e.g., processed_syllabi/Decision_making/scraped_data/xxx.json),
     extracts its "text" field, cleans and splits it into chunks using a recursive splitter,
@@ -38,12 +38,12 @@ def process_file(filepath, chunk_size=2048, chunk_overlap=200):
         chunk_data = metadata.copy()
         chunk_data["chunk_text"] = chunk
         # add a chunk identifier
-        chunk_data["chunk_id"] = f"{os.path.basename(filepath)}_chunk_{i+1}"
+        chunk_data["chunk_id"] = f"{course}_{os.path.basename(filepath)}_chunk_{i+1}"
         processed_chunks.append(chunk_data)
     
     return processed_chunks
 
-def process_directory(directory):
+def process_directory(directory, course):
     """
     Processes all scraped JSON files in a given directory and returns a list of all chunks.
     """
@@ -51,73 +51,103 @@ def process_directory(directory):
     for filename in os.listdir(directory):
         if filename.endswith(".json"):
             filepath = os.path.join(directory, filename)
-            chunks = process_file(filepath)
+            chunks = process_file(filepath, course)
             all_chunks.extend(chunks)
     return all_chunks
 
-def main():
-    # Directories for your scraped JSON files.
-    input_directory = "processed_syllabi/Data_science/scraped_data"
-    output_directory = "processed_syllabi/Data_science"
+
+def process_course(course):
+    input_directory = os.path.join("processed_syllabi", course, "scraped_data")
+    output_directory = os.path.join("processed_syllabi", course)
     os.makedirs(output_directory, exist_ok=True)
     
-    # Process scraped JSON files into chunks.
-    all_chunks = process_directory(input_directory)
-    print(f"Processed {len(all_chunks)} chunks.")
+    print(f"Processing course: {course}")
+    all_chunks = process_directory(input_directory, course)
+    print(f"Processed {len(all_chunks)} chunks for {course}.")
     
-    # Save processed chunks for inspection (optional).
+    # Save processed chunks for inspection.
     chunks_path = os.path.join(output_directory, "processed_chunks.json")
     with open(chunks_path, "w", encoding="utf-8") as f:
         json.dump(all_chunks, f, indent=2, ensure_ascii=False)
     
-    # Load SentenceTransformer model.
-    device = "cuda" if torch.cuda.is_available() else "cpu"
-    model = load_embedding_model(device=device)
+    # Check if embeddings file exists; if so, load it instead of recomputing.
+    embeddings_file = os.path.join(output_directory, "processed_chunks_with_embeddings.json")
+    if os.path.exists(embeddings_file):
+        print(f"Embeddings file exists for {course}. Loading...")
+        with open(embeddings_file, "r", encoding="utf-8") as f:
+            all_chunks = json.load(f)
+    else:
+        # Load model and compute embeddings.
+        device = "cuda" if torch.cuda.is_available() else "cpu"
+        model = load_embedding_model(device=device)
+        chunk_texts = [chunk["chunk_text"] for chunk in all_chunks]
+
+        print("Embedding chunks...")
+        embeddings = []
+        batch_size = 16
+
+        for i in tqdm(range(0, len(chunk_texts), batch_size), desc=f"Embedding {course}"):
+            batch_texts = chunk_texts[i:i+batch_size]
+            batch_embeddings = embed_text(batch_texts, model)
+            embeddings.extend(batch_embeddings)
+        for i, emb in enumerate(embeddings):
+            all_chunks[i]["embedding"] = emb.tolist() if hasattr(emb, "tolist") else emb
+
+        # save embeddings
+        with open(embeddings_file, "w", encoding="utf-8") as f:
+            json.dump(all_chunks, f, indent=2, ensure_ascii=False)
+        print(f"Saved processed chunks with embeddings to: {embeddings_file}")
     
-    # Extract the text from each chunk.
-    chunk_texts = [chunk["chunk_text"] for chunk in all_chunks]
-    
-    # Use tqdm to show progress during embedding.
-    print("Embedding chunks...")
-    embeddings = []
-    # Process in batches to provide a progress bar.
-    batch_size = 16
-    for i in tqdm(range(0, len(chunk_texts), batch_size)):
-        batch_texts = chunk_texts[i:i+batch_size]
-        batch_embeddings = embed_text(batch_texts, model)
-        embeddings.extend(batch_embeddings)
-    
-    # Append embeddings to each chunk.
-    for i, emb in enumerate(embeddings):
-        # Convert embedding to list for JSON serialization.
-        all_chunks[i]["embedding"] = emb.tolist() if hasattr(emb, "tolist") else emb
-    
-    # Save chunks with embeddings.
-    output_path = os.path.join(output_directory, "processed_chunks_with_embeddings.json")
-    with open(output_path, "w", encoding="utf-8") as f:
-        json.dump(all_chunks, f, indent=2, ensure_ascii=False)
-    print(f"Saved processed chunks with embeddings to: {output_path}")
-    
-    # Initialize ChromaDB and add documents.
-    db_client = init_db(persist_directory="chroma_db")
-    collection = get_collection(db_client, collection_name="decision_making_documents")
+    return all_chunks
+
+def main(courses):
+    # Process each course.
+    all_courses_chunks = []
+    for course in courses:
+        course_chunks = process_course(course)
+        # Add course metadata to each chunk.
+        for chunk in course_chunks:
+            chunk["course"] = course
+        all_courses_chunks.extend(course_chunks)
+
+    print(f"Total chunks processed: {len(all_courses_chunks)}")
+    print("Sample chunk:", all_courses_chunks[:1])  # Print first chunk for inspection
+
+    chunk_ids = [chunk.get("chunk_id") for chunk in all_courses_chunks]
+    print(f"Unique chunk IDs: {len(set(chunk_ids))}, Total chunks: {len(chunk_ids)}")
+
+
+    # initialize ChromaDB
+    db_client = init_db(db_path="chroma_db")
+    collection = get_collection(db_client, collection_name="rag_documents")
+
+    print("Checking existing documents in ChromaDB:")
+    print(collection.count()) 
     
     # Prepare documents for ChromaDB.
-    # Each document must have an "id", "embedding", "metadata", and "text".
     docs = []
-    for chunk in all_chunks:
-        # Use the chunk_id (from your preprocessing) as the unique id.
+    for chunk in all_courses_chunks:
         doc = {
             "id": chunk.get("chunk_id"),
             "embedding": chunk.get("embedding"),
-            "metadata": {k: v for k, v in chunk.items() if k != "chunk_text" and k != "embedding"},
+            "metadata": {k: v for k, v in chunk.items() if k not in ["chunk_text", "embedding", "flag"]},
             "text": chunk.get("chunk_text")
         }
         docs.append(doc)
     
+    print(f"Total documents to upsert: {len(docs)}")
+
+    # upsert method
     add_documents(collection, docs)
     print("Documents added to ChromaDB.")
 
+    return 
+
 
 if __name__ == "__main__":
-    main()
+
+    # List of courses to process
+    courses = ['Human_computer_interaction', 'Natural_language_processing', 'Adv_cog_neuroscience', 
+            'Adv_cognitive_modelling', 'Data_science', 'Decision_making']
+            
+    main(courses)
