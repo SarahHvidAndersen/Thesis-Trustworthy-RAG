@@ -5,6 +5,7 @@ processed_syllabi/
 chroma_db/
 setup.sh
 ucloud_setup.sh
+src/lm_polygraph
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

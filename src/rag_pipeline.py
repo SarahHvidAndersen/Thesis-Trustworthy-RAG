@@ -1,25 +1,26 @@
 import os
 import logging
 
-# Import your retriever and generate modules.
+# local modules
 from retriever import load_embedding_model, retrieve_documents
-from generate import generate_answer
 from embedding_process.vector_db import init_db, get_collection
 
-# load api key
-from dotenv import load_dotenv 
-load_dotenv()
-HF_API_KEY = os.getenv("HF_API_KEY")
-
-def rag_pipeline(query, top_k=5, api_url="", headers=None, device="cpu"):
+def rag_pipeline(query, top_k=5, provider=None, device="cpu", n_samples=1, estimator=None):
     """
     Executes an end-to-end RAG pipeline:
       1. Loads the query embedding model.
       2. Retrieves top_k documents from the ChromaDB collection.
       3. Combines the retrieved texts into a context.
-      4. Generates an answer using the Hugging Face serverless API.
+      4. Generates an answer using the provided generator.
       
-    Returns the generated answer and the retrieved documents.
+    Parameters:
+      query: The user query.
+      top_k: Number of documents to retrieve.
+      provider: An instance of GeneratorProvider (HuggingFaceProvider or ChatUIProvider).
+      device: "cpu" or "cuda" for the embedding model.
+    
+    Returns:
+      A tuple: (generated answer, list of retrieved documents).
     """
     print('loading model')
     # Load the query embedding model
@@ -29,47 +30,105 @@ def rag_pipeline(query, top_k=5, api_url="", headers=None, device="cpu"):
     # Initialize ChromaDB and get the collection.
     db_client = init_db(db_path="chroma_db")
     collection = get_collection(db_client, collection_name="rag_documents")
-
     print(f"Collection count: {collection.count()}")
+
+    if not collection.count():
+      print('empty collection')
+      return
     
     # Retrieve top_k relevant documents for the query.
     retrieved_docs = retrieve_documents(query, model, collection, top_k=top_k)
-    #print(f"docs found: {retrieved_docs}")
-    
-    # Combine retrieved texts to build context.
-    # You might consider ordering them by distance or adding separators.
-    context = "\n".join([doc["text"] for doc in retrieved_docs])
-    print(f'context found: {context}')
 
-    # Generate an answer using the Hugging Face API.
-    answer = generate_answer(query, context, api_url, headers=headers)
-    print('generated answer')
-    return answer, retrieved_docs
+    # Combine retrieved text fields to form the context.
+    context = "\n".join([doc["text"] for doc in retrieved_docs])
+    print(f"Context built from retrieved documents:\n{context}\n")
+
+    # If we're generating multiple samples to compute uncertainty:
+    if n_samples > 1 and estimator is not None:
+        responses = []
+        print(f"Generating {n_samples} samples for uncertainty estimation...")
+        for i in range(n_samples):
+            sample_response = provider.generate(query, context)
+            print(f"Sample {i+1}:\n{sample_response}\n")
+            responses.append(sample_response)
+        
+        # Build stats dictionary expected by the estimator. stats holds a list of samples.
+        stats = {"sample_texts": [responses]}
+        uncertainty_scores = estimator(stats)
+        uncertainty_score = float(uncertainty_scores[0])
+
+        # For the final answer, we could choose the first sample (or do further selection).
+        final_answer = responses[0]
+    else:
+        # Single sample generation; uncertainty will be None.
+        print("Generating a single answer...")
+        final_answer = provider.generate(query, context)
+        uncertainty_score = None
+    
+    print("Generation complete.")
+
+    return {
+        "final_answer": final_answer,
+        "samples": responses,
+        "retrieved_docs": retrieved_docs,
+        "uncertainty": uncertainty_score,
+        "top_k": top_k,
+        "n_samples": n_samples
+    }
 
 if __name__ == "__main__":
-    # Set up basic logging.
-    #logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+    # Example usage: Using the chatuiprovider.
+    from providers.provider import HuggingFaceProvider, ChatUIProvider
+    from dotenv import load_dotenv
+    load_dotenv()
     
-    # Get a user query.
-    #query = input("input query: ")
-    query = 'what does the exam of human computer interaction look like at aarhus university?'
+    # configurations
+    HF_API_KEY = os.getenv("HF_API_KEY")
+    HF_MODEL_URL = "https://api-inference.huggingface.co/models/meta-llama/Meta-Llama-3-8B-Instruct"
 
-    # Use the Hugging Face inference endpoint for a generative model
-    api_url = "https://api-inference.huggingface.co/models/meta-llama/Meta-Llama-3-8B-Instruct"
-    headers = {"Authorization": f"Bearer {HF_API_KEY}"}
+    CHATUI_API_URL = os.getenv("CHATUI_API_URL")
     
-    # Choose the device.
-    device = "cuda" if os.environ.get("CUDA_VISIBLE_DEVICES") or False else "cpu"
+    # Initialize the provider.
+    # test hf header (cache) later
+    #provider = HuggingFaceProvider(api_url=HF_MODEL_URL, headers={"Authorization": f"Bearer {HF_API_KEY}"}, "X-use-cache": "false")
+    provider = ChatUIProvider(api_url=CHATUI_API_URL)
+
+    # -- Import and initialize the uncertainty estimator.
+    from estimators.lexical_similarity import LexicalSimilarity
+    lexsim_estimator = LexicalSimilarity(metric="rougeL")
+  
+    # Example query.
+    query = "What is the role of the prefrontal cortex in decision-making? answer in one sentence."
     
-    # Run the RAG pipeline.
-    #logging.info("Running RAG pipeline...")
-    answer, docs = rag_pipeline(query, top_k=5, api_url=api_url, headers=headers, device=device)
-    
-    # Output the final answer.
-    print("\n=== Generated Answer ===")
-    print(answer)
-    
-    # print information about retrieved documents.
+   # Run the RAG pipeline with multiple samples to compute uncertainty.
+    answer, docs, uncertainty = rag_pipeline(query, top_k=5, provider=provider, device="cpu",
+                                              n_samples=5, estimator=lexsim_estimator)
     print("\n=== Retrieved Documents ===")
     for doc in docs:
         print(f"ID: {doc['id']} - Metadata: {doc['metadata']}")
+
+    print("\n=== Final Answer ===")
+    print(answer)
+
+    print("\n=== Uncertainty Score ===")
+    print(uncertainty)
+
+    from csv_logger import initialize_csv, log_experiment
+
+    # Specify the CSV file path.
+    CSV_FILE = "experiment_results.csv"
+
+    # Initialize the CSV (this creates the file with headers if needed).
+    initialize_csv(CSV_FILE)
+
+    # Log the experiment data.
+    log_experiment(CSV_FILE, {
+        "query": query,
+        "answer": answer,
+        "model": 'experiment_model',
+        "settings": 'experiment_settings',
+        "uncertainty_score": uncertainty
+    })
+
+        
+    

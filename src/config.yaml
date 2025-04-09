@@ -1,0 +1,11 @@
+# Model configuration
+model_type: "chatui"  # or "hf"
+hf_model: "https://api-inference.huggingface.co/models/meta-llama/Meta-Llama-3-8B-Instruct"
+chatui_model: "llama3.2:1b"
+
+# Generation and retrieval settings
+n_samples: 3
+top_k: 5
+temperature: 0.9
+top_p: 0.95
+max_new_tokens: 150

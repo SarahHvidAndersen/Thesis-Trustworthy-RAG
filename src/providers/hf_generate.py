@@ -35,7 +35,14 @@ def generate_answer(query: str, context: str, api_url: str, headers: dict = None
       The generated answer as a string.
     """
     prompt = build_prompt(query, context)
-    payload = {"inputs": prompt}
+    payload = {"inputs": prompt,
+        "parameters": {
+            "do_sample": True,
+            "temperature": 0.9,
+            "top_p": 0.95,
+            "max_new_tokens": 150
+        }
+    }
     
     response = requests.post(api_url, headers=headers, json=payload)
     if response.status_code == 200:
@@ -52,19 +59,16 @@ if __name__ == "__main__":
     # Test the generate_answer function independently.
     
     # Sample query and context
-    test_query = "What are the key steps in Bayesian workflow?"
+    test_query = "Tell me a short story. you decide what its about."
     test_context = (
-        "1. Data Cleaning: Removing noise and normalizing data. "
-        "2. Model Building: Constructing a probabilistic model. "
-        "3. Inference: Drawing conclusions using Bayesian methods. "
-        "4. Evaluation: Assessing model performance."
+        ""
     )
     
     # Use the Hugging Face inference endpoint for a generative model
     api_url = "https://api-inference.huggingface.co/models/meta-llama/Meta-Llama-3-8B-Instruct"
     
     # include API token in the headers for authorization
-    headers = {"Authorization": f"Bearer {HF_API_KEY}"}
+    headers = {"Authorization": f"Bearer {HF_API_KEY}", "X-use-cache": "false"}
     
     try:
         answer = generate_answer(test_query, test_context, api_url, headers=headers)
