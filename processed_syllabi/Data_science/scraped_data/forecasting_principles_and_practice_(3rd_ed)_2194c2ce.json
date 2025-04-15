@@ -1,9 +1,0 @@
-{
-    "document_type": "online_article",
-    "title": "Forecasting: Principles and Practice (3rd ed)",
-    "author": "Rob J Hyndman, George Athanasopoulos",
-    "source": "https://otexts.com/fpp3/classical-decomposition.html",
-    "date_published": "23 March 2025",
-    "flag": "",
-    "text": "The classical decomposition method originated in the 1920s. It is a relatively simple procedure, and forms the starting point for most other methods of time series decomposition. There are two forms of classical decomposition: an additive decomposition and a multiplicative decomposition. These are described below for a time series with seasonal period\\(m\\)(e.g.,\\(m=4\\)for quarterly data,\\(m=12\\)for monthly data,\\(m=7\\)for daily data with a weekly pattern). In classical decomposition, we assume that the seasonal component is constant from year to year. For multiplicative seasonality, the\\(m\\)values that form the seasonal component are sometimes called the âseasonal indicesâ. Figure3.13shows a classical decomposition of the total retail employment series across the US. Figure 3.13: A classical additive decomposition of US retail employment. A classical multiplicative decomposition is similar, except that the subtractions are replaced by divisions. While classical decomposition is still widely used, it is not recommended, as there are now several much better methods. Some of the problems with classical decomposition are summarised below."
-}

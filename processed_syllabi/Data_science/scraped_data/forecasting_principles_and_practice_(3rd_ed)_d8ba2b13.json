@@ -1,9 +1,0 @@
-{
-    "document_type": "online_article",
-    "title": "Forecasting: Principles and Practice (3rd ed)",
-    "author": "Rob J Hyndman, George Athanasopoulos",
-    "source": "https://otexts.com/fpp3/regression.html",
-    "date_published": "23 March 2025",
-    "flag": "",
-    "text": "In this chapter we discuss regression models. The basic concept is that we forecast the time series of interest\\(y\\)assuming that it has a linear relationship with other time series\\(x\\). For example, we might wish to forecast monthly sales\\(y\\)using total advertising spend\\(x\\)as a predictor. Or we might forecast daily electricity demand\\(y\\)using temperature\\(x_1\\)and the day of week\\(x_2\\)as predictors. Theforecast variable\\(y\\)is sometimes also called the regressand, dependent or explained variable. Thepredictor variables\\(x\\)are sometimes also called the regressors, independent or explanatory variables. In this book we will always refer to them as the âforecastâ variable and âpredictorâ variables."
-}
