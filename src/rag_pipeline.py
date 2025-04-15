@@ -5,77 +5,88 @@ import logging
 from retriever import load_embedding_model, retrieve_documents
 from embedding_process.vector_db import init_db, get_collection
 
-def rag_pipeline(query, top_k=5, provider=None, device="cpu", n_samples=1, estimator=None):
+
+def rag_pipeline(query, top_k=5, provider=None, device="cpu", n_samples=2, estimator=None):
     """
-    Executes an end-to-end RAG pipeline:
+    Executes the end-to-end RAG pipeline:
       1. Loads the query embedding model.
-      2. Retrieves top_k documents from the ChromaDB collection.
-      3. Combines the retrieved texts into a context.
-      4. Generates an answer using the provided generator.
-      
+      2. Retrieves top_k documents from ChromaDB.
+      3. Combines the texts into a context.
+      4. Generates an answer (or multiple samples) using the provider.
+      5. Optionally calculates an uncertainty score using the estimator.
+    
     Parameters:
       query: The user query.
       top_k: Number of documents to retrieve.
-      provider: An instance of GeneratorProvider (HuggingFaceProvider or ChatUIProvider).
-      device: "cpu" or "cuda" for the embedding model.
+      provider: Instance of GeneratorProvider.
+      device: 'cpu' or 'cuda' for the embedding model.
+      n_samples: Number of answer samples to generate.
+      estimator: An uncertainty estimator instance (implementing the __call__ method).
     
     Returns:
-      A tuple: (generated answer, list of retrieved documents).
+      A dictionary with keys:
+         "final_answer": The chosen answer (e.g., first sample).
+         "samples": The list of generated samples.
+         "retrieved_docs": Retrieved document metadata.
+         "uncertainty": A float uncertainty score (or None).
+         "top_k": The top_k value used.
+         "n_samples": The number of generated samples.
     """
-    print('loading model')
-    # Load the query embedding model
+    print('Loading query embedding model...')
     model = load_embedding_model(device=device)
     
-    print('loading database')
-    # Initialize ChromaDB and get the collection.
+    print('Loading database...')
     db_client = init_db(db_path="chroma_db")
     collection = get_collection(db_client, collection_name="rag_documents")
     print(f"Collection count: {collection.count()}")
-
-    if not collection.count():
-      print('empty collection')
-      return
     
-    # Retrieve top_k relevant documents for the query.
+    if not collection.count():
+        print('Empty collection; aborting.')
+        return None
+    
+    print("Retrieving documents...")
     retrieved_docs = retrieve_documents(query, model, collection, top_k=top_k)
-
-    # Combine retrieved text fields to form the context.
+    
     context = "\n".join([doc["text"] for doc in retrieved_docs])
-    print(f"Context built from retrieved documents:\n{context}\n")
-
-    # If we're generating multiple samples to compute uncertainty:
+    print(f"Context built:\n{context}\n")
+    
+    samples = []
     if n_samples > 1 and estimator is not None:
-        responses = []
         print(f"Generating {n_samples} samples for uncertainty estimation...")
         for i in range(n_samples):
             sample_response = provider.generate(query, context)
             print(f"Sample {i+1}:\n{sample_response}\n")
-            responses.append(sample_response)
-        
-        # Build stats dictionary expected by the estimator. stats holds a list of samples.
-        stats = {"sample_texts": [responses]}
-        uncertainty_scores = estimator(stats)
-        uncertainty_score = float(uncertainty_scores[0])
+            samples.append(sample_response)
 
-        # For the final answer, we could choose the first sample (or do further selection).
-        final_answer = responses[0]
+        #stats = {"sample_texts": [samples]}  # Expecting a list of samples for one query.
+        #uncertainty_scores = estimator(stats)
+        #uncertainty = float(uncertainty_scores[0])
+
+        # Use the factory helper to compute uncertainty.
+        from uncertainty_estimator_factory import compute_uncertainty
+        uncertainty_score = compute_uncertainty(estimator, samples)
+        print(uncertainty_score)
+        final_answer = samples[0]  # we can later choose the sample with the best score.
     else:
-        # Single sample generation; uncertainty will be None.
         print("Generating a single answer...")
-        final_answer = provider.generate(query, context)
+        sample_response = provider.generate(query, context)
+        samples.append(sample_response)
+        final_answer = sample_response
         uncertainty_score = None
     
     print("Generation complete.")
-
+    
     return {
         "final_answer": final_answer,
-        "samples": responses,
+        "samples": samples,
         "retrieved_docs": retrieved_docs,
         "uncertainty": uncertainty_score,
         "top_k": top_k,
         "n_samples": n_samples
     }
 
+
+# doesn't work rn, update
 if __name__ == "__main__":
     # Example usage: Using the chatuiprovider.
     from providers.provider import HuggingFaceProvider, ChatUIProvider
@@ -94,7 +105,7 @@ if __name__ == "__main__":
     provider = ChatUIProvider(api_url=CHATUI_API_URL)
 
     # -- Import and initialize the uncertainty estimator.
-    from estimators.lexical_similarity import LexicalSimilarity
+    from uncertainty_estimation.lexical_similarity import LexicalSimilarity
     lexsim_estimator = LexicalSimilarity(metric="rougeL")
   
     # Example query.

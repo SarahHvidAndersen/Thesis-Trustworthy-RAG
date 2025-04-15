@@ -1,7 +1,9 @@
-from lm_polygraph.estimators import Eccentricity
+from uncertainty_estimation.eccentricity import Eccentricity
 import requests
 import numpy as np
 import os
+import numpy as np
+from uncertainty_estimation.common import compute_sim_score
 
 # near 0: high confidence
 # around 0.5 or below: low confidence
@@ -36,9 +38,6 @@ def generate_samples(prompt: str, n: int) -> list:
         samples.append(reply)
     return samples
 
-import numpy as np
-from lm_polygraph.estimators import Eccentricity
-from lm_polygraph.estimators.common import compute_sim_score
 
 def estimate_uncertainty_from_samples(samples: list) -> np.ndarray:
     # Initialize Eccentricity using NLI-based settings.

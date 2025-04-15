@@ -1,4 +1,4 @@
-# This code was derived from the lm-polygraph repository - https://github.com/IINemo/lm-polygraph/tree/main (vashuring et al. 2025) 
+# This code was derived from the lm-polygraph repository - https://github.com/IINemo/lm-polygraph/tree/main (vashurin et al. 2025) 
 
 
 import numpy as np
@@ -16,9 +16,8 @@ absl_logging.set_verbosity(absl_logging.WARNING)
 # we can also use standard logging).
 #logging.basicConfig(level=logging.WARNING)
 
-# Adjust the import so that it finds the local Estimator.
-# Assuming both files are in the same folder or package.
-from estimator import Estimator
+# Adjust the import so that it finds the local Estimator, when both files are in the same folder or package.
+from .estimator import Estimator
 
 class LexicalSimilarity(Estimator):
     """

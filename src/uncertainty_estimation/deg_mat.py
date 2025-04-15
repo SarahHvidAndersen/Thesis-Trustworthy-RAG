@@ -1,3 +1,6 @@
+# This code was derived from the lm-polygraph repository - https://github.com/IINemo/lm-polygraph/tree/main (vashurin et al. 2025) 
+
+
 import numpy as np
 import logging
 from typing import Dict, Literal

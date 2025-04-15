@@ -14,7 +14,7 @@ if config["model_type"] == "hf":
     from providers.provider import HuggingFaceProvider
     # Retrieve HF_API_KEY from environment variables
     HF_API_KEY = os.getenv("HF_API_KEY")
-    
+
     provider = HuggingFaceProvider(
         api_url=config["hf_model"],
         headers={"Authorization": f"Bearer {HF_API_KEY}"},
@@ -36,15 +36,22 @@ elif config["model_type"] == "chatui":
 else:
     raise ValueError("Invalid model_type specified in configuration.")
 
-#  import the uncertainty estimator.
-from estimators.lexical_similarity import LexicalSimilarity
-lexsim_estimator = LexicalSimilarity(metric="rougeL")
+
+# Instantiate the uncertainty estimator
+from uncertainty_estimator_factory import get_uncertainty_estimator
+
+uncertainty_config = config.get("uncertainty", {})
+method = uncertainty_config.get("method", "lexical_similarity")
+params = uncertainty_config.get(method, {})
+
+estimator = get_uncertainty_estimator(method, **params)
+
 
 # Import the RAG pipeline function.
 from rag_pipeline import rag_pipeline
 
 # Example query
-query = "What is the role of the prefrontal cortex in decision-making? answer in one sentence."
+query = "What is the role of the prefrontal cortex? answer in one sentence."
 
 # Run the pipeline using parameters from the config.
 result = rag_pipeline(
@@ -53,7 +60,7 @@ result = rag_pipeline(
     provider=provider,
     device="cpu",
     n_samples=config["n_samples"],
-    estimator=lexsim_estimator
+    estimator=estimator
 )
 
 if result is None:
@@ -89,12 +96,13 @@ initialize_csv(CSV_FILE)
 experiment_data = {
     "query": query,
     "answer": final_answer,
+    "samples": json.dumps(samples, ensure_ascii=False),
     "model": config["model_type"],
     "settings": f"API URL: {config.get('hf_model') if config['model_type']=='hf' else config.get('chatui_model')}, "
                 f"temperature={config['temperature']}, top_p={config['top_p']}, max_new_tokens={config['max_new_tokens']}, "
                 f"top_k={config['top_k']}, n_samples={config['n_samples']}",
-    "uncertainty_score": uncertainty,
-    "samples": json.dumps(samples, ensure_ascii=False)
+    "uncertainty_method": method, #config['uncertainty_method'],
+    "uncertainty_score": uncertainty
 }
 
 log_experiment(CSV_FILE, experiment_data)

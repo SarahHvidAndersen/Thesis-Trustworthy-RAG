@@ -1,5 +1,5 @@
 #from lm_polygraph.estimators import LexicalSimilarity
-from estimators.lexical_similarity import LexicalSimilarity
+from uncertainty_estimation.lexical_similarity import LexicalSimilarity
 import requests
 import os
 import numpy as np

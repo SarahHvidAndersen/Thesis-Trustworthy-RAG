@@ -1,11 +1,12 @@
 import logging
 import numpy as np
 import sys
-import lm_polygraph
-print(lm_polygraph.__file__)
+#import lm_polygraph
+#from lm_polygraph.utils.deberta import Deberta
+#from lm_polygraph.estimators import DegMat
 
-from lm_polygraph.utils.deberta import Deberta
-from lm_polygraph.estimators import DegMat
+from uncertainty_estimation.deg_mat import DegMat
+from uncertainty_estimation.deberta import Deberta
 
 # Configure logging for this module.
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")

@@ -6,7 +6,7 @@ load_dotenv()
 
 
 # Configuration
-API_URL = os.getenv("CHATUI_API_URL")
+api_url = os.getenv("CHATUI_API_URL")
 model = 'llama3.2:1b'
 #model = 'llama3:8b'
 
