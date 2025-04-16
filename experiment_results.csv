@@ -1,0 +1,2 @@
+query,answer,samples,model,settings,uncertainty_method,uncertainty_score,retrieved_documents
+What is the role of the prefrontal cortex? answer in one sentence.,This is a test response,"[""This is a test response"", ""This is also a test response""]",chatui,"API URL: llama3.2:1b, temperature=0.9, top_p=0.9, max_new_tokens=150, top_k=5, n_samples=0",lexical_similarity,-0.9090909090909091,"['test', 'test']"

@@ -78,13 +78,13 @@ print(final_answer)
 print("\n=== Uncertainty Score ===")
 print(uncertainty)
 
-print("\n=== Generated Samples ===")
-for i, s in enumerate(samples):
-    print(f"Sample {i+1}: {s}\n")
+#print("\n=== Generated Samples ===")
+#for i, s in enumerate(samples):
+#    print(f"Sample {i+1}: {s}\n")
 
-print("\n=== Retrieved Documents ===")
-for doc in retrieved_docs:
-    print(f"ID: {doc['id']} - Metadata: {doc['metadata']}")
+##print("\n=== Retrieved Documents ===")
+#for doc in retrieved_docs:
+#    print(f"ID: {doc['id']} - Metadata: {doc['metadata']}")
 
 # Log experiment details to CSV.
 from csv_logger import initialize_csv, log_experiment
@@ -102,7 +102,8 @@ experiment_data = {
                 f"temperature={config['temperature']}, top_p={config['top_p']}, max_new_tokens={config['max_new_tokens']}, "
                 f"top_k={config['top_k']}, n_samples={config['n_samples']}",
     "uncertainty_method": method, #config['uncertainty_method'],
-    "uncertainty_score": uncertainty
+    "uncertainty_score": uncertainty,
+    "retrieved_documents": retrieved_docs
 }
 
 log_experiment(CSV_FILE, experiment_data)

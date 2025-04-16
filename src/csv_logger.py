@@ -2,7 +2,7 @@ import csv
 import os
 
 # Define the header for the CSV file.
-CSV_FIELDS = ["query", "answer", "samples", "model", "settings", "uncertainty_method", "uncertainty_score"]
+CSV_FIELDS = ["query", "answer", "samples", "model", "settings", "uncertainty_method", "uncertainty_score", "retrieved_documents"]
 
 def initialize_csv(csv_filename: str):
     """
@@ -40,6 +40,7 @@ if __name__ == "__main__":
         "model": "hf",
         "settings": "API_URL=https://api-inference.huggingface.co/models/meta-llama/Meta-Llama-3-8B-Instruct, temperature=0.9, top_p=0.95",
         "uncertainty_method": "lexsim",
-        "uncertainty_score": 0.05
+        "uncertainty_score": 0.05,
+        "retrieved_documents": 'test'
     }
     log_experiment(test_csv, test_data)

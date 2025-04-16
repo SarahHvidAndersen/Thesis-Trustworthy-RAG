@@ -4,7 +4,7 @@ hf_model: "https://api-inference.huggingface.co/models/meta-llama/Meta-Llama-3-8
 chatui_model: "llama3.2:1b"
 
 # Generation and retrieval settings
-n_samples: 2 # the number of samples to generate from the generative model
+n_samples: 0 # the number of samples to generate from the generative model, 0 is dummy
 top_k: 5 # the number of document snippets to retrieve from the database
 temperature: 0.9 # low is deterministic, high is more random 
 top_p: 0.9 # low is deterministic, high is more random 
@@ -12,7 +12,7 @@ max_new_tokens: 150
 
 # uncertainty method
 uncertainty:
-  method: "deg_mat"  # "lex_sim", "deg_mat" or "eccentricity"
+  method: "lexical_similarity"  # "lexical_similarity", "deg_mat" or "eccentricity"
 
   lexical_similarity:
     metric: "rougeL"
