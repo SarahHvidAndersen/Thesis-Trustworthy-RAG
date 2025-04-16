@@ -11,12 +11,23 @@ class GeneratorProvider:
     Any concrete provider must override the generate() method.
     """
     @staticmethod
-    def build_prompt(query: str, context: str) -> str:
+    def build_prompt(query: str, context: str, history = None) -> str:
         """
         Builds a prompt string given a context and a query.
         Both providers will use the same prompt format.
         """
-        prompt = f"Context:\n{context}\n\nQuestion:\n{query}\n\nAnswer:"
+        #prompt = f"Context:\n{context}\n\nQuestion:\n{query}\n\nAnswer:"
+
+        hist_block = ""
+        if history:
+            for turn in history[-6:]:
+                hist_block += f"User: {turn['user']}\nAssistant: {turn['assistant']}\n"
+
+        prompt = (
+            hist_block
+            + f"Context:\n{context}\n\n"
+            + f"Question:\n{query}\n\nAnswer:"
+        )
         return prompt
 
     def generate(self, query: str, context: str) -> str:
@@ -41,9 +52,9 @@ class HuggingFaceProvider(GeneratorProvider):
               f"top_p={self.top_p}, max_new_tokens={self.max_new_tokens}")
         print(f"[HuggingFaceProvider] Using headers: {self.headers}")
 
-    def generate(self, query: str, context: str) -> str:
+    def generate(self, query: str, context: str, history=None) -> str:
         # Use the common prompt builder.
-        prompt = GeneratorProvider.build_prompt(query, context)
+        prompt = GeneratorProvider.build_prompt(query, context, history)
         print(f"[HuggingFaceProvider] Built prompt:\n{prompt}\n")
 
         # Build payload with generation parameters from config.
@@ -87,9 +98,9 @@ class ChatUIProvider(GeneratorProvider):
         print(f"[ChatUIProvider] Generation settings: temperature={self.temperature}, top_p={self.top_p}, "
               f"max_new_tokens={self.max_new_tokens}, seed={self.seed}")
 
-    def generate(self, query: str, context: str) -> str:
+    def generate(self, query: str, context: str, history=None) -> str:
         # Create the prompt using our shared function.
-        prompt = GeneratorProvider.build_prompt(query, context)
+        prompt = GeneratorProvider.build_prompt(query, context, history)
         print(f"[ChatUIProvider] Built prompt:\n{prompt}\n")
         
         # Build payload; note that ChatUI may expect generation settings under "options"

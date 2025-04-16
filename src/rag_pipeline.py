@@ -6,7 +6,8 @@ from retriever import load_embedding_model, retrieve_documents
 from embedding_process.vector_db import init_db, get_collection
 
 
-def rag_pipeline(query, top_k=5, provider=None, device="cpu", n_samples=2, estimator=None):
+def rag_pipeline(query, top_k=5, provider=None, device="cpu",
+                  n_samples=2, estimator=None, chat_history=None):
     """
     Executes the end-to-end RAG pipeline:
       1. Loads the query embedding model.
@@ -32,35 +33,45 @@ def rag_pipeline(query, top_k=5, provider=None, device="cpu", n_samples=2, estim
          "top_k": The top_k value used.
          "n_samples": The number of generated samples.
     """
-    print('Loading query embedding model...')
-    model = load_embedding_model(device=device)
-    
-    print('Loading database...')
-    db_client = init_db(db_path="chroma_db")
-    collection = get_collection(db_client, collection_name="rag_documents")
-    print(f"Collection count: {collection.count()}")
-    
-    if not collection.count():
-        print('Empty collection; aborting.')
-        return None
-    
-    print("Retrieving documents...")
-    retrieved_docs = retrieve_documents(query, model, collection, top_k=top_k)
-    
-    context = "\n".join([doc["text"] for doc in retrieved_docs])
-    print(f"Context built:\n{context}\n")
+    if n_samples > 1:
+        print('Loading query embedding model...')
+        model = load_embedding_model(device=device)
+        
+        print('Loading database...')
+        db_client = init_db(db_path="chroma_db")
+        collection = get_collection(db_client, collection_name="rag_documents")
+        print(f"Collection count: {collection.count()}")
+        
+        if not collection.count():
+            print('Empty collection; aborting.')
+            return None
+        
+        if chat_history:
+            # keep last 6 turns
+            hist_txt = " ".join(
+                f"User: {t['user']} Assistant: {t['assistant']}" for t in chat_history[-6:]
+            )
+            embed_query_text = hist_txt + " " + query
+        else:
+            embed_query_text = query
+
+        print("Retrieving documents...")
+        retrieved_docs = retrieve_documents(embed_query_text, model, collection, top_k=top_k)
+        
+        context = "\n".join([doc["text"] for doc in retrieved_docs])
+        print(f"Context built:\n{context}\n")
+    else:
+        print('[dummy] This is a dummy returned context')
+        retrieved_docs = ['test', 'test']
+        context = "\n".join([doc for doc in retrieved_docs])
     
     samples = []
     if n_samples > 1 and estimator is not None:
         print(f"Generating {n_samples} samples for uncertainty estimation...")
         for i in range(n_samples):
-            sample_response = provider.generate(query, context)
+            sample_response = provider.generate(query, context, chat_history)
             print(f"Sample {i+1}:\n{sample_response}\n")
             samples.append(sample_response)
-
-        #stats = {"sample_texts": [samples]}  # Expecting a list of samples for one query.
-        #uncertainty_scores = estimator(stats)
-        #uncertainty = float(uncertainty_scores[0])
 
         # Use the factory helper to compute uncertainty.
         from uncertainty_estimator_factory import compute_uncertainty
@@ -68,11 +79,18 @@ def rag_pipeline(query, top_k=5, provider=None, device="cpu", n_samples=2, estim
         print(uncertainty_score)
         final_answer = samples[0]  # we can later choose the sample with the best score.
     else:
-        print("Generating a single answer...")
-        sample_response = provider.generate(query, context)
-        samples.append(sample_response)
-        final_answer = sample_response
-        uncertainty_score = None
+        #print("Generating a single answer...")
+        #sample_response = provider.generate(query, context, chat_history)
+        #samples.append(sample_response)
+        #final_answer = sample_response
+        #uncertainty_score = None
+
+        print("[dummy] creating two dummy samples...")
+        samples.append("This is a test response")
+        samples.append("This is also a test response")
+        final_answer = samples[0]
+        from uncertainty_estimator_factory import compute_uncertainty
+        uncertainty_score = compute_uncertainty(estimator, samples)
     
     print("Generation complete.")
     
@@ -110,13 +128,29 @@ if __name__ == "__main__":
   
     # Example query.
     query = "What is the role of the prefrontal cortex in decision-making? answer in one sentence."
-    
-   # Run the RAG pipeline with multiple samples to compute uncertainty.
-    answer, docs, uncertainty = rag_pipeline(query, top_k=5, provider=provider, device="cpu",
-                                              n_samples=5, estimator=lexsim_estimator)
-    print("\n=== Retrieved Documents ===")
-    for doc in docs:
-        print(f"ID: {doc['id']} - Metadata: {doc['metadata']}")
+
+    # Run the pipeline using parameters from the config.
+    result = rag_pipeline(
+        query,
+        top_k=config["top_k"],
+        provider=provider,
+        device="cpu",
+        n_samples=config["n_samples"],
+        estimator=estimator
+    )
+
+    if result is None:
+        print("Pipeline returned no result (e.g., an empty document collection).")
+        exit(1)
+
+    final_answer = result["final_answer"]
+    samples = result["samples"]
+    retrieved_docs = result["retrieved_docs"]
+    uncertainty = result["uncertainty"]
+
+    #print("\n=== Retrieved Documents ===")
+    #for doc in docs:
+    #    print(f"ID: {doc['id']} - Metadata: {doc['metadata']}")
 
     print("\n=== Final Answer ===")
     print(answer)
