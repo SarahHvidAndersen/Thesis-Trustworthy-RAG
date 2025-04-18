@@ -5,34 +5,37 @@ import logging
 from retriever import load_embedding_model, retrieve_documents
 from embedding_process.vector_db import init_db, get_collection
 
+def rag_pipeline(
+    query: str,
+    top_k: int,
+    provider,
+    device: str = "cpu",
+    n_samples: int = 1,
+    estimator=None,
+    chat_history=None
+) -> dict:
 
-def rag_pipeline(query, top_k=5, provider=None, device="cpu",
-                  n_samples=2, estimator=None, chat_history=None):
     """
-    Executes the end-to-end RAG pipeline:
-      1. Loads the query embedding model.
-      2. Retrieves top_k documents from ChromaDB.
-      3. Combines the texts into a context.
-      4. Generates an answer (or multiple samples) using the provider.
-      5. Optionally calculates an uncertainty score using the estimator.
+    Core RAG pipeline: embed query, retrieve docs, generate answers, and
+    optionally compute uncertainty.
     
     Parameters:
-      query: The user query.
-      top_k: Number of documents to retrieve.
-      provider: Instance of GeneratorProvider.
-      device: 'cpu' or 'cuda' for the embedding model.
-      n_samples: Number of answer samples to generate.
-      estimator: An uncertainty estimator instance (implementing the __call__ method).
-    
-    Returns:
-      A dictionary with keys:
-         "final_answer": The chosen answer (e.g., first sample).
-         "samples": The list of generated samples.
-         "retrieved_docs": Retrieved document metadata.
-         "uncertainty": A float uncertainty score (or None).
-         "top_k": The top_k value used.
-         "n_samples": The number of generated samples.
+    query: The user query.s
+    top_k: Number of documents to retrieve.
+    provider: Instance of GeneratorProvider.
+    device: 'cpu' or 'cuda' for the embedding model.
+    n_samples: Number of answer samples to generate.
+    estimator: An uncertainty estimator instance (implementing the __call__ method).
+  
+    Returns dict with:
+    "final_answer": The chosen answer (e.g., first sample).
+    "samples": The list of generated samples.
+    "retrieved_docs": Retrieved document metadata.
+    "uncertainty": A float uncertainty score (or None).
+    "top_k": The top_k value used.
+    "n_samples": The number of generated samples.
     """
+  
     if n_samples > 1:
         print('Loading query embedding model...')
         model = load_embedding_model(device=device)
@@ -62,8 +65,9 @@ def rag_pipeline(query, top_k=5, provider=None, device="cpu",
         print(f"Context built:\n{context}\n")
     else:
         print('[dummy] This is a dummy returned context')
-        retrieved_docs = ['test', 'test']
-        context = "\n".join([doc for doc in retrieved_docs])
+        retrieved_docs = [{"metadata": {}, "text": "This is a dummy snippet #1"},
+        {"metadata": {}, "text": "This is a dummy snippet #2"}]
+        context = "\n".join([doc["text"] for doc in retrieved_docs])
     
     samples = []
     if n_samples > 1 and estimator is not None:
@@ -102,6 +106,11 @@ def rag_pipeline(query, top_k=5, provider=None, device="cpu",
         "top_k": top_k,
         "n_samples": n_samples
     }
+
+
+
+
+
 
 
 # doesn't work rn, update

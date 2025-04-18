@@ -2,16 +2,17 @@ import torch
 from sentence_transformers import SentenceTransformer
 import numpy as np
 from embedding_process.vector_db import get_collection, init_db
-import chromadb
+import streamlit as st
 
-def load_embedding_model(model_name="intfloat/multilingual-e5-large-instruct", device="cpu"):
+
+@st.cache_resource
+def load_embedding_model(model_name: str = "intfloat/multilingual-e5-large-instruct", device: str = "cpu"):
     """
-    Loads the embedding model.
-    
-    device: "cpu" or "cuda" if available.
+    Loads and caches the embedding model.
     """
     model = SentenceTransformer(model_name, device=device)
     return model
+
 
 def embed_query(query, model):
     """
@@ -20,7 +21,7 @@ def embed_query(query, model):
     """
     # The model internally handles tokenization, truncation (max_length=512) and normalization.
     embedding = model.encode(query, convert_to_tensor=True, normalize_embeddings=True)
-    return embedding.cpu().numpy() if hasattr(embedding, "cpu") else embedding
+    return embedding.cpu().numpy()
 
 def retrieve_documents(query, model, collection, top_k=5):
     """
@@ -49,6 +50,7 @@ def retrieve_documents(query, model, collection, top_k=5):
             "distance": results["distances"][0][i]
         })
     return retrieved
+
 
 if __name__ == "__main__":
     # Example usage:

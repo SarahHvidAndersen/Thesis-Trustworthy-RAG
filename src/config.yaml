@@ -1,28 +1,25 @@
-# Model configuration
-model_type: "chatui"  # or "hf"
-hf_model: "https://api-inference.huggingface.co/models/meta-llama/Meta-Llama-3-8B-Instruct"
-chatui_model: "llama3.2:1b"
+# config.yaml
+model:
+  type: "chatui"    # or "hf"
+  hf_model: "https://api-inference.huggingface.co/models/meta-llama/Meta-Llama-3-8B-Instruct"
+  chatui_model: "llama3.2:1b"
 
-# Generation and retrieval settings
-n_samples: 0 # the number of samples to generate from the generative model, 0 is dummy
-top_k: 5 # the number of document snippets to retrieve from the database
-temperature: 0.9 # low is deterministic, high is more random 
-top_p: 0.9 # low is deterministic, high is more random 
-max_new_tokens: 150
+generation:
+  n_samples: 5       # number of samples to draw; 0 triggers dummy/demo
+  top_k: 5           # number of docs to retrieve
+  temperature: 0.9   # sampling temperature
+  top_p: 0.9         # nucleus sampling
+  max_new_tokens: 150
 
-# uncertainty method
 uncertainty:
-  method: "lexical_similarity"  # "lexical_similarity", "deg_mat" or "eccentricity"
-
+  method: "lexical_similarity"
   lexical_similarity:
     metric: "rougeL"
-
   deg_mat:
     batch_size: 10
     device: "cpu"
     affinity: "entail"
     verbose: True
-
   eccentricity:
     similarity_score: "NLI_score"
     affinity: "entail"
