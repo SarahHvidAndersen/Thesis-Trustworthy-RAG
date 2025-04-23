@@ -3,9 +3,35 @@ import pypdf
 from pathlib import Path
 from logging_config import logger
 
+def _safe_meta_val(raw_val, default="Unknown"):
+    """
+    Turn raw_val into a non-empty, stripped string.
+    If raw_val is None, a NullObject, or becomes empty when stripped,
+    return the given default.
+    """
+    if isinstance(raw_val, str):
+        text = raw_val.strip()
+        return text or default
+
+    # explicit check for pypdf's NullObject
+    if raw_val is None or isinstance(raw_val, NullObject):
+        return default
+
+    # Fallback: coerce anything else to str
+    try:
+        text = str(raw_val).strip()
+        return text or default
+    except Exception:
+        return default
+    
 def extract_pdf_metadata(pdf_path):
-    """Extracts metadata (title, author, date) from a PDF file."""
+    """
+    Extracts metadata (title, author, date, keywords) from a PDF file.
+    Always returns 4 strings: (title, author, date, keywords),
+    using 'Unknown' or 'Unavailable' if the metadata is missing or invalid
+    """
     title, author, date_published = "Unknown", "Unknown", "Unknown"
+    keywords = "Unavailable"
 
     try:
         with open(pdf_path, "rb") as f:
@@ -17,18 +43,30 @@ def extract_pdf_metadata(pdf_path):
                 for key, value in metadata.items():
                     logger.debug(f"   pypdf* {key}: {value}")
 
-            title = metadata.get("/Title", "Unknown")
-            author = metadata.get("/Author", "Unknown")
-            date_published = metadata.get("/CreationDate", "Unknown")
-            keywords = metadata.get("/Keywords", "Unavailable")
+            # safely normalize each field
+            title = _safe_meta_val(metadata.get("/Title"), default="Unknown")
+            author = _safe_meta_val(metadata.get("/Author"), default="Unknown")
+            raw_date = _safe_meta_val(metadata.get("/CreationDate"), default="Unknown")
+            keywords = _safe_meta_val(metadata.get("/Keywords"), default="Unavailable")
+
             
             # format date correctly - YYYY-MM-DD format
-            if date_published.startswith("D:"):
-                date_published = f"{date_published[2:6]}-{date_published[6:8]}-{date_published[8:10]}"
+            # only format if it really looks like 'D:YYYYMMDD...'
+            if raw_date.startswith("D:") and len(raw_date) >= 10:
+                try:
+                    year  = raw_date[2:6]
+                    month = raw_date[6:8]
+                    day   = raw_date[8:10]
+                    date_published = f"{year}-{month}-{day}"
+                except Exception:
+                    date_published = raw_date
+            else:
+                date_published = raw_date
+    
     except Exception as e:
         logger.warning(f"Error extracting metadata with PyPDF: {e}")
 
-    return title.strip(), author.strip(), date_published.strip(), keywords.strip()
+    return title, author, date_published, keywords
 
 
 def pymupdf_extract_pdf_metadata(pdf_path):

@@ -60,12 +60,12 @@ def save_scraped_data(course_name, document_data, page_range=None):
     logger.info(f"Saved: {save_path}")
 
 
-def process_course_syllabi(course_name):
+def process_course_syllabi(level, course_name):
     """
     Processes course materials, distinguishing between books, research papers, and articles.
     Saves extracted data in a structured format.
     """
-    materials_file = f"raw_syllabi/master_courses/{course_name}/materials_paths.txt"
+    materials_file = f"raw_syllabi/{level}/{course_name}/materials_paths.txt"
     materials = parse_materials_paths(materials_file)
 
     for material in materials:
@@ -89,14 +89,18 @@ def process_course_syllabi(course_name):
 
 if __name__ == "__main__":
 
-    courses = ['Human_computer_interaction', 'Natural_language_processing', 'Adv_cog_neuroscience', 'Adv_cognitive_modelling', 'Data_science', 'Decision_making']
-    #courses = ['Data_science']
+    #level = "master_courses"
+    #courses = ['Human_computer_interaction', 'Natural_language_processing', 'Adv_cog_neuroscience', 'Adv_cognitive_modelling', 'Data_science', 'Decision_making']
+    level = "bachelor_courses"
+    #courses = ['applied_cognitive_science', 'cognition_and_communication', 'cognitive_neuroscience', 'intro_to_cognitive_science', 'Methods_1', 'Methods_2', 'Methods_3', 'Methods_4', 'perception_and_action', 'philosophy_of_cognitive_science', 'social_and_cultural_dynamics']
+    courses = ['philosophy_of_cognitive_science']
+        #rerun with last data for phil and soccult
 
     for course in courses:
         os.makedirs(f"processed_syllabi/{course}", exist_ok=True)
 
         logger.info(f'Beginning processing of: {course}')
         
-        process_course_syllabi(f"{course}")
+        process_course_syllabi(level, f"{course}")
 
         logger.info(f'Finished processing of: {course}')
