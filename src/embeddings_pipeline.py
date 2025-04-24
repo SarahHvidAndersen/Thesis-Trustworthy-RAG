@@ -149,5 +149,8 @@ if __name__ == "__main__":
     # List of courses to process
     courses = ['Human_computer_interaction', 'Natural_language_processing', 'Adv_cog_neuroscience', 
             'Adv_cognitive_modelling', 'Data_science', 'Decision_making']
+    courses = ['applied_cognitive_science', 'cognition_and_communication', 'cognitive_neuroscience', 
+               'intro_to_cognitive_science', 'Methods_1', 'Methods_2', 'Methods_3', 'Methods_4', 'perception_and_action', 'philosophy_of_cognitive_science', 'social_and_cultural_dynamics']
+    
             
     main(courses)

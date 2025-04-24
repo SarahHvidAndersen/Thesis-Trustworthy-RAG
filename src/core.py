@@ -132,7 +132,7 @@ def run_rag(
 
     top_k = top_k_override or gen_cfg['top_k']
     n_samples = n_samples_override or gen_cfg['n_samples']
-    model_type = model_type_override or cfg_model['type']
+    model_type = model_type_override or model_cfg['type']
     model_id = model_id_override or model_cfg[f"{model_type}_model"]
     api_key = api_key_override or (
         os.getenv('HF_API_KEY') if model_type=='hf' else os.getenv('CHATUI_API_URL')

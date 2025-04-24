@@ -47,7 +47,7 @@ def add_documents(collection, docs):
     return
 
 
-# only used for testing, maybe delete later
+# only used for testing
 def query_documents(collection, query_embedding, n_results=5):
     """
     Queries the collection with the given embedding, returning top-n results.
