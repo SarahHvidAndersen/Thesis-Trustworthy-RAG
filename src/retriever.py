@@ -4,6 +4,16 @@ import numpy as np
 from embedding_process.vector_db import get_collection, init_db
 import streamlit as st
 
+# retriever.py
+from bm25_retriever import load_bm25_index, retrieve as bm25_retrieve
+
+# load once on import
+bm25_retriever, chunk_map = load_bm25_index(mmap=True, load_corpus=True)
+
+def retrieve_documents(query: str, *, top_k: int = 5):
+    # just dispatch to bm25_retrieve
+    return bm25_retrieve(query, top_k=top_k)
+
 
 @st.cache_resource
 def load_embedding_model(model_name: str = "intfloat/multilingual-e5-large-instruct", device: str = "cpu"):
@@ -57,7 +67,7 @@ if __name__ == "__main__":
     # Initialize (load or create) the database client and collection.
     db_client = init_db(db_path="chroma_db")
     collection = get_collection(db_client, collection_name="rag_documents")
-    print(f"Collection count: {collection.count()}")  # Should print 4793
+    print(f"Collection count: {collection.count()}")  # Should print 4793 for master only, 13 something now
     
     # Load your query embedding model.
     device = "cuda" if torch.cuda.is_available() else "cpu"

@@ -5,30 +5,46 @@ load_dotenv()
 
 
 class GeneratorProvider:
-    #TODO improve prompt template
     """
     Abstract base class for generator providers.
     Any concrete provider must override the generate() method.
     """
     @staticmethod
-    def build_prompt(query: str, context: str, history = None) -> str:
-        """
-        Builds a prompt string given a context and a query.
-        Both providers will use the same prompt format.
-        """
-        #prompt = f"Context:\n{context}\n\nQuestion:\n{query}\n\nAnswer:"
+    def build_prompt(query: str, retrieved_docs: list[dict], history=None) -> str:
+        # System instruction
+        system_prompt = (
+            "SYSTEM: You are a knowledgeable cognitive science tutor.\n"
+            "Provide concise, factual answers using only the supplied CONTEXT.\n"
+            'If the answer is not contained in CONTEXT, respond: "I\'m not sure."\n\n'
+        )
 
+        # History from chat
         hist_block = ""
         if history:
             for turn in history[-6:]:
                 hist_block += f"User: {turn['user']}\nAssistant: {turn['assistant']}\n"
+            hist_block += "\n"
 
-        prompt = (
-            hist_block
-            + f"Context:\n{context}\n\n"
-            + f"Question:\n{query}\n\nAnswer:"
+        # Context from the retriever with explicit delimiters + metadata
+        # Numbered context section
+        context_section = "--- CONTEXT BEGIN ---\n"
+        for idx, doc in enumerate(retrieved_docs, start=1):
+            try:
+                title = doc.get("metadata", {}).get("title", "Unknown")
+                # label each snippet with the index
+                context_section += f"[{idx}] [Title: {title}] {doc['text']}\n"
+            except:
+                pass
+
+        context_section += "--- CONTEXT END ---\n\n"
+
+        # Question directive with citation instruction
+        question_block = (
+            f"QUESTION: {query}\n"
+            "Answer using citation markers ([1], [2], etc.) to reference the context sources."
         )
-        return prompt
+
+        return system_prompt + hist_block + context_section + question_block
 
     def generate(self, query: str, context: str) -> str:
         raise NotImplementedError("Subclasses must implement this method.")
@@ -158,6 +174,6 @@ if __name__ == "__main__":
         temperature=0.9,
         seed=None
     )
-    chatui_response = chatui_provider.generate("Tell me a joke.", "Test context for ChatUI.")
+    chatui_response = chatui_provider.generate("Tell me what kind of chatbot you are.", ["sample1", "sample2"])
     print("ChatUIProvider generated response:")
     print(chatui_response)

@@ -6,6 +6,15 @@ from retriever import load_embedding_model, retrieve_documents
 from embedding_process.vector_db import init_db, get_collection
 from uncertainty_estimator_factory import compute_uncertainty
 
+# core.py (inside rag_pipeline)
+
+# 1) BM25-side
+bm25_hits = retrieve_documents(query, top_k=cfg['retrieval']['hybrid']['sparse_k'])
+# 2) dense-side
+dense_hits = retrieve_with_chromadb(query, top_k=cfg['retrieval']['hybrid']['dense_k'])
+# 3) fuse & rerank… as we sketched before
+
+
 load_dotenv()
 
 @lru_cache(maxsize=1)
@@ -17,6 +26,9 @@ def get_config() -> dict:
     
 
 def init_provider(model_type: str, model_id: str, api_key: str, cfg: dict):
+    model_cfg = cfg['model']
+    gen_cfg = cfg['generation']
+
     if model_type == "hf":
         from providers.provider import HuggingFaceProvider # fix cache
         # add cache
@@ -24,9 +36,9 @@ def init_provider(model_type: str, model_id: str, api_key: str, cfg: dict):
         return HuggingFaceProvider(
             api_url=model_id,
             headers={"Authorization": f"Bearer {api_key}"},
-            temperature=cfg["temperature"],
-            top_p=cfg["top_p"],
-            max_new_tokens=cfg["max_new_tokens"],
+            temperature=gen_cfg["temperature"],
+            top_p=gen_cfg["top_p"],
+            max_new_tokens=gen_cfg["max_new_tokens"],
         )
     elif model_type == "chatui":
         from providers.provider import ChatUIProvider
@@ -34,12 +46,12 @@ def init_provider(model_type: str, model_id: str, api_key: str, cfg: dict):
         return ChatUIProvider(
             api_url=api_key,
             model_id=model_id,
-            temperature=cfg["temperature"],
-            top_p=cfg["top_p"],
-            max_new_tokens=cfg["max_new_tokens"],
+            temperature=gen_cfg["temperature"],
+            top_p=gen_cfg["top_p"],
+            max_new_tokens=gen_cfg["max_new_tokens"],
         )
     else:
-        raise ValueError(f"Invalid model_type {cfg['model_type']}")
+        raise ValueError(f"Invalid model_type {model_cfg['model_type']}")
 
 def init_estimator(cfg: dict, override_method: str = None):
     method = override_method or cfg["uncertainty"]["method"]
@@ -86,19 +98,19 @@ def rag_pipeline(
         return None
 
     retrieved_docs = retrieve_documents(embed_query_text, model, collection, top_k=top_k)
-    context = "\n".join(doc["text"] for doc in retrieved_docs)
+    #context = "\n".join(doc["text"] for doc in retrieved_docs)
 
     # Generation
     samples = []
     if n_samples > 1 and estimator is not None:
         for i in range(n_samples):
-            sample = provider.generate(query, context, chat_history)
+            sample = provider.generate(query, retrieved_docs, chat_history)
             samples.append(sample)
         uncertainty = compute_uncertainty(estimator, samples)
         final_answer = samples[0]
     else:
         # Single-sample path
-        sample = provider.generate(query, context, chat_history)
+        sample = provider.generate(query, retrieved_docs, chat_history)
         samples.append(sample)
         final_answer = sample
         uncertainty = None

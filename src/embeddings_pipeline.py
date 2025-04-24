@@ -1,8 +1,8 @@
 import os
 import json
-from tqdm import tqdm
-import torch
-import torch.nn.functional as F
+from tqdm import tqdm 
+#import torch
+#import torch.nn.functional as F
 #from sentence_transformers import SentenceTransformer
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 
@@ -62,13 +62,20 @@ def process_course(course):
     os.makedirs(output_directory, exist_ok=True)
     
     print(f"Processing course: {course}")
-    all_chunks = process_directory(input_directory, course)
-    print(f"Processed {len(all_chunks)} chunks for {course}.")
-    
-    # Save processed chunks for inspection.
+    # Check for already-processed chunks file
     chunks_path = os.path.join(output_directory, "processed_chunks.json")
-    with open(chunks_path, "w", encoding="utf-8") as f:
-        json.dump(all_chunks, f, indent=2, ensure_ascii=False)
+    if os.path.exists(chunks_path):
+        print(f"Found existing chunks file for {course}, loading…")
+        with open(chunks_path, "r", encoding="utf-8") as f:
+            all_chunks = json.load(f)
+    else:
+        # If processed chunk doesn't exist, scan & split the scraped_data
+        all_chunks = process_directory(input_directory, course)
+        print(f"Processed {len(all_chunks)} chunks for {course}.")
+        # Save for next time
+        with open(chunks_path, "w", encoding="utf-8") as f:
+            json.dump(all_chunks, f, indent=2, ensure_ascii=False)
+        print(f"Saved processed chunks to: {chunks_path}")
     
     # Check if embeddings file exists; if so, load it instead of recomputing.
     embeddings_file = os.path.join(output_directory, "processed_chunks_with_embeddings.json")
@@ -78,7 +85,8 @@ def process_course(course):
             all_chunks = json.load(f)
     else:
         # Load model and compute embeddings.
-        device = "cuda" if torch.cuda.is_available() else "cpu"
+        #device = "cuda" if torch.cuda.is_available() else "cpu"
+        device = "cpu"
         model = load_embedding_model(device=device)
         chunk_texts = [chunk["chunk_text"] for chunk in all_chunks]
 
@@ -111,7 +119,7 @@ def main(courses):
         all_courses_chunks.extend(course_chunks)
 
     print(f"Total chunks processed: {len(all_courses_chunks)}")
-    print("Sample chunk:", all_courses_chunks[:1])  # Print first chunk for inspection
+    #print("Sample chunk:", all_courses_chunks[:1])  # Print first chunk for inspection
 
     chunk_ids = [chunk.get("chunk_id") for chunk in all_courses_chunks]
     print(f"Unique chunk IDs: {len(set(chunk_ids))}, Total chunks: {len(chunk_ids)}")
@@ -147,10 +155,17 @@ def main(courses):
 if __name__ == "__main__":
 
     # List of courses to process
-    courses = ['Human_computer_interaction', 'Natural_language_processing', 'Adv_cog_neuroscience', 
-            'Adv_cognitive_modelling', 'Data_science', 'Decision_making']
-    courses = ['applied_cognitive_science', 'cognition_and_communication', 'cognitive_neuroscience', 
-               'intro_to_cognitive_science', 'Methods_1', 'Methods_2', 'Methods_3', 'Methods_4', 'perception_and_action', 'philosophy_of_cognitive_science', 'social_and_cultural_dynamics']
-    
+    #courses = ['Human_computer_interaction', 'Natural_language_processing', 'Adv_cog_neuroscience', 
+    #        'Adv_cognitive_modelling', 'Data_science', 'Decision_making']
+    #courses = ['applied_cognitive_science', 'cognition_and_communication', 'cognitive_neuroscience', 
+    #           'intro_to_cognitive_science', 'Methods_1', 'Methods_2', 'Methods_3', 'Methods_4']
+    #courses = ['perception_and_action', 'philosophy_of_cognitive_science', 'social_and_cultural_dynamics']
+    courses = ['applied_cognitive_science']
             
-    main(courses)
+    #main(courses)
+
+    from bm25_retriever import build_and_save_bm25_index
+
+    # once, after you’ve generated all your chunks:
+    build_and_save_bm25_index()
+
