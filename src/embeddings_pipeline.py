@@ -1,14 +1,15 @@
 import os
 import json
 from tqdm import tqdm 
-#import torch
-#import torch.nn.functional as F
-#from sentence_transformers import SentenceTransformer
+import torch
+import torch.nn.functional as F
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 
+from retrievers.bm25_retriever import build_index
 from embedding_process.preprocessing import clean_text 
 from embedding_process.embeddings import load_embedding_model, embed_text
-from embedding_process.vector_db import init_db, get_collection, add_documents
+from embedding_process.chroma_db import init_db, get_collection, add_documents
+# full chromadb/bm25index length: 13758
 
 def process_file(filepath, course, chunk_size=2048, chunk_overlap=200):
     """
@@ -71,6 +72,11 @@ def process_course(course):
     else:
         # If processed chunk doesn't exist, scan & split the scraped_data
         all_chunks = process_directory(input_directory, course)
+        
+        # add course metadata for the first run
+        for chunk in all_chunks:
+            chunk["course"] = course
+
         print(f"Processed {len(all_chunks)} chunks for {course}.")
         # Save for next time
         with open(chunks_path, "w", encoding="utf-8") as f:
@@ -85,8 +91,7 @@ def process_course(course):
             all_chunks = json.load(f)
     else:
         # Load model and compute embeddings.
-        #device = "cuda" if torch.cuda.is_available() else "cpu"
-        device = "cpu"
+        device = "cuda" if torch.cuda.is_available() else "cpu"
         model = load_embedding_model(device=device)
         chunk_texts = [chunk["chunk_text"] for chunk in all_chunks]
 
@@ -124,7 +129,6 @@ def main(courses):
     chunk_ids = [chunk.get("chunk_id") for chunk in all_courses_chunks]
     print(f"Unique chunk IDs: {len(set(chunk_ids))}, Total chunks: {len(chunk_ids)}")
 
-
     # initialize ChromaDB
     db_client = init_db(db_path="chroma_db")
     collection = get_collection(db_client, collection_name="rag_documents")
@@ -145,7 +149,7 @@ def main(courses):
     
     print(f"Total documents to upsert: {len(docs)}")
 
-    # upsert method
+    # upsert to chroma method
     add_documents(collection, docs)
     print("Documents added to ChromaDB.")
 
@@ -154,18 +158,24 @@ def main(courses):
 
 if __name__ == "__main__":
 
+    courses = []
     # List of courses to process
-    #courses = ['Human_computer_interaction', 'Natural_language_processing', 'Adv_cog_neuroscience', 
-    #        'Adv_cognitive_modelling', 'Data_science', 'Decision_making']
-    #courses = ['applied_cognitive_science', 'cognition_and_communication', 'cognitive_neuroscience', 
-    #           'intro_to_cognitive_science', 'Methods_1', 'Methods_2', 'Methods_3', 'Methods_4']
-    #courses = ['perception_and_action', 'philosophy_of_cognitive_science', 'social_and_cultural_dynamics']
-    courses = ['applied_cognitive_science']
+    first_courses = ['Human_computer_interaction', 'Natural_language_processing', 'Adv_cog_neuroscience', 
+            'Adv_cognitive_modelling', 'Data_science', 'Decision_making']
+    second_courses = ['applied_cognitive_science', 'cognition_and_communication', 'cognitive_neuroscience', 
+               'intro_to_cognitive_science', 'Methods_1', 'Methods_2', 'Methods_3', 'Methods_4']
+    third_courses = ['perception_and_action', 'philosophy_of_cognitive_science', 'social_and_cultural_dynamics', 
+                     'applied_cognitive_science']
+    
+    courses.append(first_courses)
+    courses.append(second_courses)
+    courses.append(third_courses)
             
-    #main(courses)
+    for course_batch in courses:
+        main(course_batch)
 
-    from bm25_retriever import build_and_save_bm25_index
+    # initialize bm25 index, after creating all chunks (shouldn't be in batches)
+    build_index()
+    print("Documents added to bm25 index.")
 
-    # once, after you’ve generated all your chunks:
-    build_and_save_bm25_index()
 

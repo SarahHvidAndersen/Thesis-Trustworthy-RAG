@@ -41,7 +41,8 @@ def generate_samples(prompt: str, n: int) -> list:
 
 def estimate_uncertainty_from_samples(samples: list) -> np.ndarray:
     # Initialize Eccentricity using NLI-based settings.
-    estimator = Eccentricity(similarity_score="NLI_score", affinity="entail", verbose=True, thres=0.9)
+    estimator = Eccentricity(similarity_score="NLI_score", affinity="entail", verbose=True, 
+                             thres=0.5)
     # Compute the semantic similarity matrix W for these samples.
     # This function computes a square matrix where entry [i, j] is the similarity score
     W = compute_sim_score(answers=samples, affinity=estimator.affinity, similarity_score=estimator.similarity_score)
@@ -173,7 +174,7 @@ Cats have been human companions for thousands of years, with evidence suggesting
 
 def main(test=True):
     if test:
-        test_case = "new_dissimilar"  # Options: "new_similar", "new_dissimilar"
+        test_case = "new_similar"  # Options: "new_similar", "new_dissimilar"
 
         if test_case == "new_similar":
             # Five reworded definitions of Newton's second law (F = m*a)

@@ -2,8 +2,8 @@ import os
 import logging
 
 # local modules
-from retriever import load_embedding_model, retrieve_documents
-from embedding_process.vector_db import init_db, get_collection
+from retrievers.semantic_retriever import load_embedding_model, retrieve_documents
+from embedding_process.chroma_db import init_db, get_collection
 
 def rag_pipeline(
     query: str,
@@ -78,7 +78,7 @@ def rag_pipeline(
             samples.append(sample_response)
 
         # Use the factory helper to compute uncertainty.
-        from uncertainty_estimator_factory import compute_uncertainty
+        from uncertainty_estimation.uncertainty_estimator_factory import compute_uncertainty
         uncertainty_score = compute_uncertainty(estimator, samples)
         print(uncertainty_score)
         final_answer = samples[0]  # we can later choose the sample with the best score.
@@ -93,7 +93,7 @@ def rag_pipeline(
         samples.append("This is a test response")
         samples.append("This is also a test response")
         final_answer = samples[0]
-        from uncertainty_estimator_factory import compute_uncertainty
+        from uncertainty_estimation.uncertainty_estimator_factory import compute_uncertainty
         uncertainty_score = compute_uncertainty(estimator, samples)
     
     print("Generation complete.")
@@ -167,7 +167,7 @@ if __name__ == "__main__":
     print("\n=== Uncertainty Score ===")
     print(uncertainty)
 
-    from csv_logger import initialize_csv, log_experiment
+    from logging.csv_logger import initialize_csv, log_experiment
 
     # Specify the CSV file path.
     CSV_FILE = "experiment_results.csv"

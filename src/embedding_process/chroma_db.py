@@ -34,7 +34,7 @@ def add_documents(collection, docs):
     print(f"Upserting {len(ids)} documents...")
 
     if not ids:
-        print("⚠️ No documents to upsert!")
+        print(" No documents to upsert!")
         return
     
     collection.upsert(
@@ -43,7 +43,7 @@ def add_documents(collection, docs):
         metadatas=metadatas,
         documents=documents
     )
-    print("✅ Upsert complete.")
+    print(" Upsert complete.")
     return
 
 

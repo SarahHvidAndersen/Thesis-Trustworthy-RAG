@@ -1,28 +1,16 @@
 import torch
 from sentence_transformers import SentenceTransformer
-import numpy as np
-from embedding_process.vector_db import get_collection, init_db
-import streamlit as st
-
-# retriever.py
-from bm25_retriever import load_bm25_index, retrieve as bm25_retrieve
-
-# load once on import
-bm25_retriever, chunk_map = load_bm25_index(mmap=True, load_corpus=True)
-
-def retrieve_documents(query: str, *, top_k: int = 5):
-    # just dispatch to bm25_retrieve
-    return bm25_retrieve(query, top_k=top_k)
+from embedding_process.chroma_db import get_collection, init_db
+from functools import lru_cache
 
 
-@st.cache_resource
+@lru_cache(maxsize=1)
 def load_embedding_model(model_name: str = "intfloat/multilingual-e5-large-instruct", device: str = "cpu"):
     """
     Loads and caches the embedding model.
     """
     model = SentenceTransformer(model_name, device=device)
     return model
-
 
 def embed_query(query, model):
     """
@@ -59,7 +47,7 @@ def retrieve_documents(query, model, collection, top_k=5):
             "text": results["documents"][0][i],
             "distance": results["distances"][0][i]
         })
-    return retrieved
+    return retrieved 
 
 
 if __name__ == "__main__":
@@ -67,7 +55,7 @@ if __name__ == "__main__":
     # Initialize (load or create) the database client and collection.
     db_client = init_db(db_path="chroma_db")
     collection = get_collection(db_client, collection_name="rag_documents")
-    print(f"Collection count: {collection.count()}")  # Should print 4793 for master only, 13 something now
+    print(f"Collection count: {collection.count()}")  # Should print 13758
     
     # Load your query embedding model.
     device = "cuda" if torch.cuda.is_available() else "cpu"

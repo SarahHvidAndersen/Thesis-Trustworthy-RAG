@@ -1,6 +1,6 @@
 import json
 import os
-from logging_config import logger
+from logging.logging_config import logger
 
 CORRECTIONS_FILE = r"processed_syllabi\metadata_corrections.json"
 

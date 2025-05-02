@@ -5,9 +5,10 @@ load_dotenv()
 
 
 # Configuration
-API_URL = os.getenv("CHATUI_API_URL")
-#MODEL_ID = "llama3:8b"
-MODEL_ID = "llama3.2:1b"
+#API_URL = os.getenv("CHATUI_API_URL")
+API_URL = 'overwrite?' 
+MODEL_ID = "llama3:8b"
+#MODEL_ID = "llama3.2:1b"
 
 def generate_chatui_response(prompt: str) -> str:
     payload = {

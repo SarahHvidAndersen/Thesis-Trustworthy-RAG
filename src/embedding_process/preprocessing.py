@@ -5,39 +5,6 @@ import json
 def clean_text(text):
     """
     Cleans the input text by:
-      - Normalizing Unicode (NFKC).
-      - Removing control characters (except newline and tab).
-      - Removing extraneous whitespace.
-      
-    Example artifacts removed:
-      - Unicode control characters like \u0000, \u0001, \u0002, etc.
-      - Extra spaces, tabs, and carriage returns.
-    
-    Returns the cleaned text.
-    """
-    # Normalize Unicode (NFKC helps to standardize many characters)
-    text = unicodedata.normalize('NFKC', text)
-    
-    # Remove control characters except newline (\n) and tab (\t).
-    # Control characters are in the ranges \x00-\x1F and \x7F-\x9F.
-    # Preserving \n (newline) and \t (tab) for readability.
-    text = re.sub(r'[\x00-\x08\x0B-\x0C\x0E-\x1F\x7F-\x9F]', '', text)
-    
-    # Remove carriage returns if present (\r) to standardize newlines.
-    text = text.replace('\r', '')
-    
-    # Collapse multiple whitespace characters (including newlines and tabs) into a single space,
-    # but you can choose to preserve newlines by splitting and rejoining if needed.
-    # Here, we keep newlines by first splitting on newline, cleaning each line, then rejoining.
-    lines = text.split('\n')
-    cleaned_lines = [re.sub(r'\s+', ' ', line).strip() for line in lines if line.strip()]
-    cleaned_text = '\n'.join(cleaned_lines)
-    
-    return cleaned_text
-
-def clean_text(text):
-    """
-    Cleans the input text by:
       - Normalizing Unicode using NFKC.
       - Removing control characters (except newline and tab).
       - Removing unwanted symbols (e.g., ∗, ‡, §, ¶, ‖, etc.).

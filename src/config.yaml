@@ -1,29 +1,59 @@
 # config.yaml
 retrieval:
-  hybrid:
-    α: 0.5                   # weight for dense vs. sparse
-    sparse_k: 20            # how many BM25 hits to keep
-    dense_k: 20             # how many vector hits to keep
-    rerank_k: 10            # how many to send to reranker
-    reranker_model:         # HuggingFace cross-encoder
-      id: "cross-encoder/ms-marco-MiniLM-L-6-v2"
-      batch_size: 16
+  method: hybrid
+  semantic_weight: 0.5
+  top_k: 100
+  semantic_k: 50  # not actually used, just shows default value
+  lexical_k: 50 # not actually used, just shows default value
+  min_docs: 0
+  max_docs: 10
+  threshold: 0.3 # conservative thres
 
 
 model:
+  # default settings, backward compatibility
   type: "chatui"    # or "hf"
   hf_model: "https://api-inference.huggingface.co/models/meta-llama/Meta-Llama-3-8B-Instruct"
-  chatui_model: "llama3.2:1b"
+  chatui_model: "llama3:8b" #llama3.2:1b" or "llama3:8b"
+
+  # All available models, grouped by provider
+  providers:
+    chatui:
+      default: "Llama-3.8-1B"
+      options:
+        - name: "Llama-3.2-1B"
+          id:   "llama3.2:1b"
+        - name: "Llama-3-8B"
+          id:   "llama3:8b"
+    hf:
+      default: "Llama-3-8B"
+      options:
+        - name: "Llama-3-8B"
+          id:   "https://api-inference.huggingface.co/models/meta-llama/Meta-Llama-3-8B-Instruct"
+        - name: "Llama-3-70B"
+          id:   "https://api-inference.huggingface.co/models/meta-llama/Meta-Llama-3-70B-Instruct"
 
 generation:
   n_samples: 5       # number of samples to draw; 0 triggers dummy/demo
-  top_k: 5           # number of docs to retrieve
+  #top_k: 5           # number of docs to retrieve
   temperature: 0.9   # sampling temperature
-  top_p: 0.9         # nucleus sampling
-  max_new_tokens: 150
+  top_p: 0.95        # nucleus sampling
+  max_new_tokens: 300
 
-uncertainty:
-  method: "lexical_similarity"
+# raw score -> higher is more uncertain
+uncertainty: 
+
+  method: "lexical_similarity" # default
+
+  scaling:
+    # which scaler to use after computing `raw_uq`
+    type: "quantile"               # or "isotonic"
+    # for each UE method, point to the fitted‐scaler on disk
+    paths:
+      lexical_similarity: "fitted_scalers/lex_score_quantile_scaler.joblib"
+      deg_mat:               "fitted_scalers/deg_score_quantile_scaler.joblib"
+      eccentricity:          "fitted_scalers/ecc_score_quantile_scaler.joblib"
+
   lexical_similarity:
     metric: "rougeL"
   deg_mat:
@@ -31,8 +61,9 @@ uncertainty:
     device: "cpu"
     affinity: "entail"
     verbose: True
-  eccentricity:
+  eccentricity: 
     similarity_score: "NLI_score"
     affinity: "entail"
     verbose: True
-    thres: 0.9
+    thres: 0.5 # paper default of 0.9, doesn't work with only 5 samples. should ideally be calibrated too
+

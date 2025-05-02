@@ -3,8 +3,8 @@ import json
 from scraping.html_scraper import scrape_html
 from scraping.pdf_processor import scrape_pdf
 from scraping.metadata_handler import update_metadata_corrections
-from utils import get_stable_filename
-from logging_config import logger
+from scraping.utils import get_stable_filename
+from logging.logging_config import logger
 
 def parse_materials_paths(file_path):
     """
@@ -41,9 +41,8 @@ def parse_materials_paths(file_path):
 def save_scraped_data(course_name, document_data, page_range=None):
     """Saves extracted data into a JSON file with correct metadata and page range tracking."""
 
-    os.makedirs(f"processed_syllabi\\{course_name}\\scraped_data", exist_ok=True)
-
-    output_dir = f"processed_syllabi\\{course_name}\\scraped_data"
+    output_dir = os.path.join("processed_syllabi", course_name, "scraped_data")
+    os.makedirs(output_dir, exist_ok=True)
 
     # create clean and stable filename, that prevents articles with the same title from overwriting
     save_path = get_stable_filename(output_dir, document_data["title"], document_data["source"], ".json", page_range)
@@ -94,7 +93,6 @@ if __name__ == "__main__":
     level = "bachelor_courses"
     #courses = ['applied_cognitive_science', 'cognition_and_communication', 'cognitive_neuroscience', 'intro_to_cognitive_science', 'Methods_1', 'Methods_2', 'Methods_3', 'Methods_4', 'perception_and_action', 'philosophy_of_cognitive_science', 'social_and_cultural_dynamics']
     courses = ['philosophy_of_cognitive_science']
-        #rerun with last data for phil and soccult
 
     for course in courses:
         os.makedirs(f"processed_syllabi/{course}", exist_ok=True)
