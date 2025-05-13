@@ -19,7 +19,7 @@ model:
   # All available models, grouped by provider
   providers:
     chatui:
-      default: "Llama-3.8-1B"
+      default: "Llama-3-8B"
       options:
         - name: "Llama-3.2-1B"
           id:   "llama3.2:1b"
@@ -35,7 +35,6 @@ model:
 
 generation:
   n_samples: 5       # number of samples to draw; 0 triggers dummy/demo
-  #top_k: 5           # number of docs to retrieve
   temperature: 0.9   # sampling temperature
   top_p: 0.95        # nucleus sampling
   max_new_tokens: 300
@@ -43,7 +42,7 @@ generation:
 # raw score -> higher is more uncertain
 uncertainty: 
 
-  method: "lexical_similarity" # default
+  method: "deg_mat" # default
 
   scaling:
     type: "quantile"               # or "isotonic"

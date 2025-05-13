@@ -93,7 +93,7 @@ else:
 
 # Model selection
 prov = model_cfg.get('providers', {}).get(provider, {})
-options = prov.get('options', [])  # list of dicts with 'name' and 'id'
+options = prov.get('options', [])  # list of dicts with 'name' and 'id' 
 names = [opt['name'] for opt in options]
 default = prov.get('default', names[0] if names else '')
 default_idx = names.index(default) if default in names else 0

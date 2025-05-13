@@ -1,33 +1,41 @@
 # Thesis-Trustworthy-RAG
+This repository contains a prototype implementation of a Retrieval‑Augmented Generation (RAG) chatbot with uncertainty estimation.  The codebase is structured as a proper Python package (internal) and a Streamlit front‑end app interface. 
 
-### 1. Clone and enter the project
+## repository layout
+.
+├─ src/
+│  └─ internal/                # main Python package (import internal.*)
+│     ├─ core.py               # package entry‑point for CLI experiments
+│     ├─ retrievers/
+│     ├─ uncertainty_estimator/
+│     └─ ...
+│  └─ rag_chatbot/ 
+│     ├─ streamlit_app.py           # Streamlit UI entry‑point
+│  └─ scripts/ 
+│
+├─ data/                       # manually added
+├─ pyproject.toml              # build/dependency metadata
+├─ uv.lock                     # dependency versions
+└─ README.md 
+
+```shell
+# 1. Clone and enter the project
 git clone https://github.com/SarahHvidAndersen/Thesis-Trustworthy-RAG.git
-cd thesis‑trustworthy‑rag
+$ cd thesis-trustworthy-rag
 
-### 2. Create an isolated Python 3.10+ environment
-python -m venv .venv                 
-source .venv/bin/activate            # Windows: .venv\Scripts\activate
+# 2. Create an isolated environment (built on pyproject.toml + uv.lock)
+$ uv venv .venv --python 3.10   # or 3.11/3.12
+$ uv sync                       # installs exact, locked deps
 
-### 3. Install the project *in editable mode*
-python -m pip install --upgrade pip
-pip install -e .[dev]                # pulls runtime + dev/test deps
+# 3. Activate the environment
+# Windows
+> .venv\Scripts\activate
+# macOS / Linux
+$ source .venv/bin/activate
 
-### 4. Initialise local vector store (optional, but avoids empty‑results)
-export STORAGE_PATH=$PWD/data/chroma_db        # Linux/macOS
-setx STORAGE_PATH "%cd%\data\chroma_db"        # Windows PowerShell
-python -m internal.database_setup.create_demo_index
+# 4a. CLI smoke test
+$ uv run -m internal.core --help
 
-### 5. Run either interface
-# CLI test
-python -m internal.core --query "Hello, world"
-
-# Streamlit UI
-streamlit run streamlit_app.py
-
-
----
-# Fast path – if they have uv (best for exact locks)
-uv sync                                # reads uv.lock
-
-# Vanilla path – no uv needed
-python -m pip install -e .             # pip reads the same build backend
+# 4b. Launch the Streamlit UI
+$ streamlit run streamlit_app.py
+```

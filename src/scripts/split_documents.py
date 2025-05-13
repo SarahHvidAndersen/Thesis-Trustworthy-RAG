@@ -5,14 +5,14 @@ from tqdm import tqdm
 from langchain.document_loaders import DirectoryLoader, JSONLoader
 from langchain.schema import Document
 # Text cleaning
-from database_setup.preprocessing import clean_text
+from internal.database_setup.preprocessing import clean_text
 
-DATA_DIR      = "processed_syllabi/"
+DATA_DIR      = "data/processed_syllabi/"
 GLOB_PATTERN  = "**/scraped_data/*.json"
-CLEANED_PICKLE = Path("cleaned_docs.pkl")
+CLEANED_PICKLE = Path("doc_splits/cleaned_docs.pkl")
 
 TEST_PILOT_SIZE = 100          # size of the first “pilot” list
-SPLIT_DIR       = Path("doc_splits")
+SPLIT_DIR       = Path("data/doc_splits")
 SPLIT_DIR.mkdir(exist_ok=True, parents=True)
 
 
@@ -83,7 +83,7 @@ if __name__ == "__main__":
         pd.to_pickle(split, out_path)
         print(f"  Saved split #{idx} ({len(split)} docs) → {out_path}")
 
-    print("\nAll done!  You now have:")
+    print("\ncreated new files:")
     print(f"• 1 pilot file ({TEST_PILOT_SIZE} docs)")
     print(
         f"• {len(list(SPLIT_DIR.glob('split_*.pkl')))} additional split files "
