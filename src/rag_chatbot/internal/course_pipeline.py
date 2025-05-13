@@ -4,7 +4,7 @@ from scraping.html_scraper import scrape_html
 from scraping.pdf_processor import scrape_pdf
 from scraping.metadata_handler import update_metadata_corrections
 from scraping.utils import get_stable_filename
-from logging.logging_config import logger
+from logging_utils.scraping_logger import logger
 
 def parse_materials_paths(file_path):
     """
@@ -41,7 +41,7 @@ def parse_materials_paths(file_path):
 def save_scraped_data(course_name, document_data, page_range=None):
     """Saves extracted data into a JSON file with correct metadata and page range tracking."""
 
-    output_dir = os.path.join("processed_syllabi", course_name, "scraped_data")
+    output_dir = os.path.join("data/processed_syllabi", course_name, "scraped_data")
     os.makedirs(output_dir, exist_ok=True)
 
     # create clean and stable filename, that prevents articles with the same title from overwriting
@@ -64,7 +64,7 @@ def process_course_syllabi(level, course_name):
     Processes course materials, distinguishing between books, research papers, and articles.
     Saves extracted data in a structured format.
     """
-    materials_file = f"raw_syllabi/{level}/{course_name}/materials_paths.txt"
+    materials_file = f"data/raw_syllabi/{level}/{course_name}/materials_paths.txt"
     materials = parse_materials_paths(materials_file)
 
     for material in materials:

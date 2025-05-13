@@ -5,11 +5,11 @@ from dotenv import load_dotenv
 from sentence_transformers import CrossEncoder
 from joblib import load
 
-from uncertainty_estimation.uncertainty_estimator_factory import get_uncertainty_estimator, compute_uncertainty
-from retrievers.semantic_retriever import load_embedding_model, retrieve_documents
-from embedding_process.chroma_db import init_db, get_collection
-from retrievers.bm25_retriever import bm25_retrieve
-from providers.provider import GeneratorProvider
+from internal.uncertainty_estimation.uncertainty_estimator_factory import get_uncertainty_estimator, compute_uncertainty
+from internal.retrievers.semantic_retriever import load_embedding_model, retrieve_documents
+from internal.database_setup.chroma_db import init_db, get_collection
+from internal.retrievers.bm25_retriever import bm25_retrieve
+from internal.providers.provider import GeneratorProvider
 
 load_dotenv(override=True)
 
@@ -142,11 +142,6 @@ def rag_pipeline(
             retrieved_docs.append(doc)
             seen.add(doc["id"])
 
-    # see retrieved docs before reranking
-    #for doc in retrieved_docs:
-    #    snippet = doc['text'][:100] + ('...' if len(doc['text']) > 100 else '')
-    #    print(f"- [{doc['source']}] - ID: {doc['id']}, snippet: {snippet}")
-
     # reranking
     reranker = get_reranker()
     pairs = [(query, doc['text']) for doc in retrieved_docs]
@@ -157,9 +152,9 @@ def rag_pipeline(
         doc['rerank_score'] = score
     retrieved_docs.sort(key=lambda d: d['rerank_score'], reverse=True)
 
-    # Conservative thresholding: require rerank_score > 0.5
-    threshold = retr_cfg.get('threshold', 0.4)
-    min_docs = retr_cfg.get('min_docs', 1)
+    # threshold score, from config
+    threshold = retr_cfg.get('threshold', 0.3)
+    min_docs = retr_cfg.get('min_docs', 0)
     max_docs = retr_cfg.get('max_docs', 10)
 
     # Filter candidates above threshold and cap at max to not overwhelm llm
@@ -197,7 +192,7 @@ def rag_pipeline(
         selection = provider.generate_raw(selection_prompt)
         print(F"SELECTION MODEL OUTPUT IS: " + selection)
     
-        # parse the reply as an integer index
+        # parse the reply with regex
         try:
             #choice = int(selection.strip())
             m = re.search(r"\b([0-9]+)\b", selection)
@@ -216,7 +211,6 @@ def rag_pipeline(
             # reflexive check is more stable for larger models, so this part could be improved
             #final_answer = "I’m not sure about the correct response."
              
-
     else:
         # Single-sample path
         sample = provider.generate(query, retrieved_docs, chat_history)

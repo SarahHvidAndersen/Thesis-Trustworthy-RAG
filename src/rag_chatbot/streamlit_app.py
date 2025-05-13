@@ -1,29 +1,21 @@
-# app to do 
-# - fix the too long message in the side bar
-# - - ⍟ 0-30% = red bubble ...
-# fix the sources
-# remove and reorder settings stuff
-
-# be sure that the scores are reasonable... 
 
 #silence the watcher’s log noise
 import logging
 logging.getLogger("streamlit.watcher.local_sources_watcher").setLevel(logging.ERROR)
 
 import streamlit as st
-from app.ui_helpers import render_chat_history
-from core import run_rag, get_config
-from logging_scripts.csv_logger import initialize_csv, log_experiment
+from ui_helpers import render_chat_history
+from internal.core import run_rag, get_config
+from internal.logging_utils.csv_logger import initialize_csv, log_experiment
 import json, os
 import copy
-from retrievers.semantic_retriever import load_embedding_model as _load
+from internal.retrievers.semantic_retriever import load_embedding_model as _load
 
+#streamlit cache add-on
 @st.cache_resource
 def load_embedding_model(model_name: str, device: str):
     # add Streamlit cache
     return _load(model_name, device)
-
-
 
 # streamlit interface
 st.set_page_config(page_title="Trustworthy RAG Chatbot", layout="wide")
@@ -147,7 +139,7 @@ with st.sidebar.expander("📖 Advanced Settings", expanded=False):
 st.session_state.setdefault("history", [])
 
 # Initialize CSV logging once
-CSV_FILE = "output/streamlit_run/experiment_results.csv"
+CSV_FILE = "output/streamlit_run/experiment_results.csv" # never overwrites, just appends new experiment data
 initialize_csv(CSV_FILE)
 
 # input question to start rag process

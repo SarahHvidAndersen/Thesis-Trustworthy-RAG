@@ -46,13 +46,13 @@ uncertainty:
   method: "lexical_similarity" # default
 
   scaling:
-    # which scaler to use after computing `raw_uq`
     type: "quantile"               # or "isotonic"
+    
     # for each UE method, point to the fitted‐scaler on disk
     paths:
       lexical_similarity: "fitted_scalers/lex_score_quantile_scaler.joblib"
-      deg_mat:               "fitted_scalers/deg_score_quantile_scaler.joblib"
-      eccentricity:          "fitted_scalers/ecc_score_quantile_scaler.joblib"
+      deg_mat: "fitted_scalers/deg_score_quantile_scaler.joblib"
+      eccentricity: "fitted_scalers/ecc_score_quantile_scaler.joblib"
 
   lexical_similarity:
     metric: "rougeL"
@@ -65,5 +65,5 @@ uncertainty:
     similarity_score: "NLI_score"
     affinity: "entail"
     verbose: True
-    thres: 0.5 # paper default of 0.9, doesn't work with only 5 samples. should ideally be calibrated too
+    thres: 0.7 # paper default of 0.9, doesn't work with only 5 samples. should ideally be calibrated carefully
 

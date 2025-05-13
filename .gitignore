@@ -1,11 +1,10 @@
 # only push code for safe-keeping for now
 
-raw_syllabi/
-processed_syllabi/
-chroma_db/
+data/
+output/
+
 setup.sh
 ucloud_setup.sh
-src/lm_polygraph
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

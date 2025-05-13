@@ -70,7 +70,7 @@ def render_chat_history(history: List[Dict]) -> None:
         conf = turn.get("calibrated_confidence")
         pct: int | None = int(round(conf * 100)) if conf is not None else None
         bubble_cls = (
-            "conf-high" if (pct or 0) >= 70 else "conf-med" if (pct or 0) >= 40 else "conf-low"
+            "conf-high" if (pct or 0) >= 70 else "conf-med" if (pct or 0) >= 30 else "conf-low"
         )
 
         # Assistant body

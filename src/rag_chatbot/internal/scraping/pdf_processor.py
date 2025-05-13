@@ -1,7 +1,7 @@
 import pymupdf  # PyMuPDF/fitz
 import pypdf
 from pathlib import Path
-from logging.logging_config import logger
+from logging_scripts.logging_config import logger
 
 def _safe_meta_val(raw_val, default="Unknown"):
     """
@@ -210,7 +210,7 @@ def scrape_pdf(pdf_path, page_range=None, true_page_1=None):
         "source": pdf_path,
         "date_published": date_published,
         "keywords": keywords,
-        "flag": flag,
+        "flag": flag, # empty text warning
         "text": text
     }
 

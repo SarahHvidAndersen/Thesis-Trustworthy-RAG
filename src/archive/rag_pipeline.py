@@ -3,7 +3,7 @@ import logging
 
 # local modules
 from retrievers.semantic_retriever import load_embedding_model, retrieve_documents
-from embedding_process.chroma_db import init_db, get_collection
+from database_setup.chroma_db import init_db, get_collection
 
 def rag_pipeline(
     query: str,

@@ -1,7 +1,7 @@
 import os
 import json
 from logging_scripts.csv_logger import initialize_csv, log_experiment
-from core import run_rag, get_config
+from src_new.internal.core import run_rag, get_config
 
 def main():
     # Load configuration

@@ -11,7 +11,7 @@ import numpy as np
 import pandas as pd
 from tqdm import tqdm
 
-from core import (
+from src_new.internal.core import (
     get_config,
     init_provider,
     init_estimator,
@@ -125,7 +125,7 @@ def run_eval(
         elapsed = time.time() - start
 
         pending_rows.append({
-            **row.to_dict(),    ## this will copy *all* of the original CSV columns
+            **row.to_dict(),    ## copy *all* of the original CSV columns
             #"user_input":         prompt, included above
             "samples":         json_safe(samples),
             "final_answer":    final_answer,
@@ -153,14 +153,14 @@ def run_eval(
     if pending_rows:
         dfs_out.append(pd.DataFrame(pending_rows))
     pd.concat(dfs_out, ignore_index=True).to_csv(output_csv, index=False)
-    print(f"✅ Finished – results saved to {output_csv} (total {sum(len(df) for df in dfs_out)} rows).")
+    print(f" Finished – results saved to {output_csv} (total {sum(len(df) for df in dfs_out)} rows).")
 
 
 if __name__ == "__main__":
 
     run_eval(
-        input_csv="output/raw_test_data/filt_anno_split_testset_merged.csv", #filt_anno_merged_testset
-        output_csv="output/response_test_data/filt_anno_split_testset_merged.csv", # filt_anno_merged_testset_pred not done
+        input_csv="output/raw_test_data/full_f-anno_split_testset.csv", 
+        output_csv="output/answered_test_data/testset_with_predictions.csv",
         n_samples=5,
         save_every=10,
         resume=True,

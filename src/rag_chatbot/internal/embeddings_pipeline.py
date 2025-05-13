@@ -6,9 +6,9 @@ import torch.nn.functional as F
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 
 from retrievers.bm25_retriever import build_index
-from embedding_process.preprocessing import clean_text 
-from embedding_process.embeddings import load_embedding_model, embed_text
-from embedding_process.chroma_db import init_db, get_collection, add_documents
+from database_setup.preprocessing import clean_text 
+from database_setup.embeddings import load_embedding_model, embed_text
+from database_setup.chroma_db import init_db, get_collection, add_documents
 # full chromadb/bm25index length: 13758
 
 def process_file(filepath, course, chunk_size=2048, chunk_overlap=200):
@@ -58,8 +58,8 @@ def process_directory(directory, course):
 
 
 def process_course(course):
-    input_directory = os.path.join("processed_syllabi", course, "scraped_data")
-    output_directory = os.path.join("processed_syllabi", course)
+    input_directory = os.path.join("data", "processed_syllabi", course, "scraped_data")
+    output_directory = os.path.join("data", "processed_syllabi", course)
     os.makedirs(output_directory, exist_ok=True)
     
     print(f"Processing course: {course}")

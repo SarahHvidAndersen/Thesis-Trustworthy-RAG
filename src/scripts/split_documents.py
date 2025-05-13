@@ -5,13 +5,13 @@ from tqdm import tqdm
 from langchain.document_loaders import DirectoryLoader, JSONLoader
 from langchain.schema import Document
 # Text cleaning
-from embedding_process.preprocessing import clean_text
+from database_setup.preprocessing import clean_text
 
 DATA_DIR      = "processed_syllabi/"
 GLOB_PATTERN  = "**/scraped_data/*.json"
 CLEANED_PICKLE = Path("cleaned_docs.pkl")
 
-TEST_PILOT_SIZE = 100          # <= size of the first “pilot” list
+TEST_PILOT_SIZE = 100          # size of the first “pilot” list
 SPLIT_DIR       = Path("doc_splits")
 SPLIT_DIR.mkdir(exist_ok=True, parents=True)
 

@@ -1,2 +1,0 @@
-query,answer,samples,model,settings,uncertainty_method,uncertainty_score
-Tell me a joke.,Why did the chicken cross the road? To get to the other side!,[sample response],hf,"API_URL=https://api-inference.huggingface.co/models/meta-llama/Meta-Llama-3-8B-Instruct, temperature=0.9, top_p=0.95",lexsim,0.05

@@ -1,3 +1,6 @@
+# run as module to import correctly
+# python -m scripts.generate_ragas_dataset
+
 import os
 from dotenv import load_dotenv
 import pandas as pd
@@ -23,7 +26,7 @@ from langchain_community.document_loaders import DirectoryLoader, JSONLoader
 from langchain.schema import Document
 
 # Text cleaning
-from embedding_process.preprocessing import clean_text
+from database_setup.preprocessing import clean_text
 
 # if we want to see the cache in action, set the logging level to debug
 import logging
@@ -37,11 +40,10 @@ os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
 
 
 # Configuration
-DATA_DIR = "processed_syllabi/"
+DATA_DIR = "data/processed_syllabi/"
 GLOB = "**/scraped_data/*.json"
-#CLEANED_DOCS_PATH = Path("cleaned_docs.pkl")
-CLEANED_DOCS_PATH = Path("doc_splits/split_00_100.pkl")
-KG_PATH = Path("output/knowledge_graph_split_00_100.json") 
+CLEANED_DOCS_PATH = Path("data/doc_splits/split_00_100.pkl")
+KG_PATH = Path("output/knowledge_graphs/knowledge_graph_split_00_100.json") 
 
 #Saved pilot split → doc_splits\pilot_100.pkl
  # Saved split #0 (100 docs) → doc_splits\split_00_100.pkl
@@ -49,10 +51,10 @@ KG_PATH = Path("output/knowledge_graph_split_00_100.json")
  # Saved split #2 (100 docs) → doc_splits\split_02_100.pkl
  # Saved split #3 (22 docs) → doc_splits\split_03_22.pkl
 
-JSON_OUT = Path("output/testset_split_00_100.json") 
-CSV_OUT = Path("output/testset_split_00_100.csv")
+JSON_OUT = Path("output/raw_test_data/json_version/testset_split_00_100.json") 
+CSV_OUT = Path("output/raw_test_data/testset_split_00_100.csv")
 TESTSET_SIZE = 50
-CACHE_DIR = ".cache/ragas"
+CACHE_DIR = ".cache/ragas" # or data/.cache/ragas
 
 # load stored Documents
 def load_and_clean_documents(

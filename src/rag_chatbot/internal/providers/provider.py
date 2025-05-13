@@ -9,10 +9,10 @@ def build_context_and_hist(retrieved_docs: list[dict], history: list[dict] | Non
     Returns only the chat history (last turns) and the CONTEXT block,
     without any system or example prompts.
     """
-    # Optional chat history
+    # chat history
     hist_block = ""
     if history:
-        for turn in history[-6:]:
+        for turn in history[-4:]:
             hist_block += f"User: {turn['user']}\nAssistant: {turn['assistant']}\n"
         hist_block += "\n"
 
@@ -68,7 +68,7 @@ class GeneratorProvider:
         # add chat history, if any
         hist_block = ""
         if history:
-            for turn in history[-6:]:
+            for turn in history[-4:]:
                 hist_block += f"User: {turn['user']}\nAssistant: {turn['assistant']}\n"
             hist_block += "\n"
 
@@ -89,7 +89,6 @@ class GeneratorProvider:
         # Real question
         question_block = (
             f"QUESTION: {query} \n"
-            #"You may answer using citation markers ([1], [2], etc.) to reference the context sources when you deem it highly relevant. Otherwise, just respond normally."
         )
 
         return (system_prompt + example_prompt + hist_block + context_section + question_block)
@@ -103,7 +102,7 @@ class GeneratorProvider:
     ) -> str:
         """
         Build a prompt that:
-          1) re-shows system+context (no question line),
+          1) new system prompt
           2) presents one example of selection,
           3) lists `candidates`,
           4) asks the model to reply exactly with the index (1,2,…) or 0 to abstain.
@@ -112,7 +111,6 @@ class GeneratorProvider:
         "SYSTEM: You are a numeric selection assistant. Your job is to pick, by index, "
         "the single best answer from the list of candidates, using ONLY the CONTEXT.\n\n"
         )
-        
 
         # One-shot selection example
         example = (
