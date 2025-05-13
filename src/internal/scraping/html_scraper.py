@@ -5,7 +5,9 @@ import re
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 import time
-from logging.logging_config import logger
+#from logging.logging_config import logger
+import logging
+logger = logging.getLogger(__name__)
 
 def get_html_soup(url):
     """Fetches HTML content from a URL and returns a BeautifulSoup object for parsing."""

@@ -1,7 +1,7 @@
 import pymupdf  # PyMuPDF/fitz
 import pypdf
 from pathlib import Path
-from logging_scripts.logging_config import logger
+from internal.logging_utils.scraping_logger import logger
 
 def _safe_meta_val(raw_val, default="Unknown"):
     """

@@ -9,7 +9,7 @@ from internal.database_setup.preprocessing import clean_text
 
 DATA_DIR      = "data/processed_syllabi/"
 GLOB_PATTERN  = "**/scraped_data/*.json"
-CLEANED_PICKLE = Path("doc_splits/cleaned_docs.pkl")
+CLEANED_PICKLE = Path("data/doc_splits/cleaned_docs.pkl")
 
 TEST_PILOT_SIZE = 100          # size of the first “pilot” list
 SPLIT_DIR       = Path("data/doc_splits")

@@ -1,7 +1,7 @@
 import os
 import json
-from logging_scripts.csv_logger import initialize_csv, log_experiment
-from src_new.internal.core import run_rag, get_config
+from internal.logging_utils.csv_logger import initialize_csv, log_experiment
+from internal.core import run_rag, get_config
 
 def main():
     # Load configuration
@@ -67,7 +67,7 @@ def main():
     print(final_answer)
 
     # Persist experiment data
-    CSV_FILE = "experiment_results.csv"
+    CSV_FILE = "output/client_run/experiment_results.csv"
     initialize_csv(CSV_FILE)
     experiment_data = {
         "query": query,

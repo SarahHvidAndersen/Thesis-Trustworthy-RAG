@@ -1,6 +1,6 @@
 import torch
 from sentence_transformers import SentenceTransformer
-from ..database_setup.chroma_db import get_collection, init_db # can move to main function
+from internal.database_setup.chroma_db import get_collection, init_db 
 from functools import lru_cache
 
 

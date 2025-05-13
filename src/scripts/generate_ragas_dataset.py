@@ -31,11 +31,9 @@ import logging
 from ragas.utils import set_logging_level
 set_logging_level("ragas.cache", logging.DEBUG)
 
-
 # Ensure the OpenAI key is set
 load_dotenv(override=True)
 os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
-
 
 # Configuration
 DATA_DIR = "data/processed_syllabi/"

@@ -1,8 +1,8 @@
 import json
 import os
-from logging.logging_config import logger
+from internal.logging_utils.scraping_logger import logger
 
-CORRECTIONS_FILE = r"processed_syllabi\metadata_corrections.json"
+CORRECTIONS_FILE = r"data\processed_syllabi\metadata_corrections.json"
 
 def load_metadata_corrections():
     """Loads manually corrected metadata from a JSON file or creates an empty one if missing."""

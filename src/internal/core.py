@@ -1,7 +1,8 @@
-import os, yaml
+import os, yaml, sys
 import re
 from functools import lru_cache
-from dotenv import load_dotenv
+from getpass import getpass
+from dotenv import load_dotenv, set_key
 from sentence_transformers import CrossEncoder
 from joblib import load
 from pathlib import Path
@@ -14,35 +15,50 @@ from internal.providers.provider import GeneratorProvider
 
 load_dotenv(override=True)
 
+_ENV_FILE = Path('.') / '.env'                     # repo root → “.env”
+
+def ensure_secret(var_name: str, prompt: str) -> str:
+    """
+    Return `os.getenv(var_name)` if set, otherwise prompt the user
+    (only when running interactive).  The captured key is
+    written back to `.env` so the next run is silent.
+
+    Raises RuntimeError if we are in a non‑interactive context.
+    """
+    import os
+    key = os.getenv(var_name)
+    if key:                                   # already set
+        return key.strip()
+
+    if not sys.stdin.isatty():                # e.g. pytest, CI
+        raise RuntimeError(f"{var_name} is not set and no TTY is available for an interactive prompt.")
+
+    # Prompt – getpass hides the input
+    key = getpass(prompt).strip()
+    if not key:
+        raise RuntimeError("Empty key entered – aborting.")
+
+    # Persist for next time (silently ignore if .env is read‑only)
+    try:
+        set_key(_ENV_FILE, var_name, key)
+        print(f"[config] Saved {var_name} to {_ENV_FILE}")
+    except Exception:
+        pass
+
+    return key
+
 @lru_cache(maxsize=1)
 def get_reranker():
     # Loads the cross-encoder for MS MARCO L-6
     return CrossEncoder('cross-encoder/ms-marco-MiniLM-L-6-v2')
 
 
-#@lru_cache(maxsize=1)
-#def get_config() -> dict:
-#    """Load and cache the YAML config file."""
-#    cfg_path = os.path.join(os.path.dirname(__file__), "config.yaml")
-#    with open(cfg_path, encoding="utf-8") as f:
-#        return yaml.safe_load(f)
-
 @lru_cache(maxsize=1)
 def get_config() -> dict:
     """
     Load and cache the YAML config file.
-
-    Looks for ``config.yaml`` in the project root (two levels above this file).
-    Override with the env‑var ``RAG_CONFIG`` if we need a custom path.
     """
-    #  allow an override for notebooks / CI
-    env_override = Path(os.getenv("RAG_CONFIG", ""))
-    if env_override.is_file():
-        cfg_path = env_override
-    else:
-        #  repo‑root/config.yaml
-        cfg_path = Path(__file__).resolve().parents[2] / "config.yaml"
-
+    cfg_path = Path(__file__).resolve().parents[2] / "config.yaml"
     with cfg_path.open(encoding="utf-8") as f:
         return yaml.safe_load(f)
 
@@ -272,13 +288,16 @@ def run_rag(
     model_type = model_type_override or model_cfg['type']
     model_id = model_id_override or model_cfg[f"{model_type}_model"]
 
-    if model_type == 'hf':
-        api_key = api_key_override.strip() or os.getenv('HF_API_KEY')
+    if model_type == "hf":
+        api_key = (api_key_override or "").strip() or ensure_secret(
+                "HF_API_KEY", "Enter your Hugging Face API key (starts with hf_…): "
+            )
+    elif model_type == "chatui":
+        api_key = (api_key_override or "").strip() or ensure_secret(
+            "CHATUI_API_URL", "Enter the ChatUI inference endpoint URL: "
+        )
     else:
-        if api_key_override and api_key_override.strip():
-            api_key = api_key_override.strip()
-        else:
-            api_key = os.getenv('CHATUI_API_URL')
+        raise ValueError(f"Unsupported model_type: {model_type}")
 
     provider = init_provider(model_type, model_id, api_key, cfg)
     estimator = init_estimator(cfg, override_method=uq_method_override)

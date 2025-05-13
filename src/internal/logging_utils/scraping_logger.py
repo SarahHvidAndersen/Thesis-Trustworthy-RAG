@@ -11,7 +11,7 @@ logger.setLevel(logging.DEBUG)
 if not logger.handlers:
     # Create a file handler to log to a file
     #file_handler = logging.FileHandler("processed_syllabi/scraping_courses_logger.txt", mode='w', encoding='utf-8')
-    file_handler = logging.FileHandler('processed_syllabi/scraping_courses_log_file.log')
+    file_handler = logging.FileHandler('data/processed_syllabi/scraping_courses_log_file.log')
     file_handler.setLevel(logging.DEBUG)
 
     # Define log format

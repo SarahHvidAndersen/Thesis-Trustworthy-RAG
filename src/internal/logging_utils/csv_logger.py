@@ -12,6 +12,7 @@ def initialize_csv(csv_filename: str):
     """
     if not os.path.exists(csv_filename):
         print(f"[CSV Logger] Creating new CSV file: {csv_filename}")
+        os.makedirs(os.path.dirname(csv_filename), exist_ok=True)
         with open(csv_filename, mode='w', newline='', encoding='utf-8') as f:
             writer = csv.DictWriter(f, fieldnames=CSV_FIELDS)
             writer.writeheader()
@@ -32,7 +33,7 @@ def log_experiment(csv_filename: str, data: dict):
 
 if __name__ == "__main__":
     # test: initialize and log a test row.
-    test_csv = "output/experiment_results.csv"
+    test_csv = "output/streamlit_run/test_experiment_results.csv"
     initialize_csv(test_csv)
     
     test_data = {

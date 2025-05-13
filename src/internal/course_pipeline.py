@@ -1,10 +1,10 @@
 import os
 import json
-from scraping.html_scraper import scrape_html
-from scraping.pdf_processor import scrape_pdf
-from scraping.metadata_handler import update_metadata_corrections
-from scraping.utils import get_stable_filename
-from logging_utils.scraping_logger import logger
+from internal.scraping.html_scraper import scrape_html
+from internal.scraping.pdf_processor import scrape_pdf
+from internal.scraping.metadata_handler import update_metadata_corrections
+from internal.scraping.utils import get_stable_filename
+from internal.logging_utils.scraping_logger import logger
 
 def parse_materials_paths(file_path):
     """
@@ -95,7 +95,7 @@ if __name__ == "__main__":
     courses = ['philosophy_of_cognitive_science']
 
     for course in courses:
-        os.makedirs(f"processed_syllabi/{course}", exist_ok=True)
+        os.makedirs(f"data/processed_syllabi/{course}", exist_ok=True)
 
         logger.info(f'Beginning processing of: {course}')
         

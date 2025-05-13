@@ -19,7 +19,7 @@ def collect_chunks():
     return chunks
 
 def build_index():
-    index_dir = os.path.join("bm25_index")
+    index_dir = os.path.join("data/bm25_index")
     stemmer = Stemmer.Stemmer("english")
 
     chunks   = collect_chunks()

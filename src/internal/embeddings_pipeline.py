@@ -5,10 +5,10 @@ import torch
 import torch.nn.functional as F
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 
-from retrievers.bm25_retriever import build_index
-from database_setup.preprocessing import clean_text 
-from database_setup.embeddings import load_embedding_model, embed_text
-from database_setup.chroma_db import init_db, get_collection, add_documents
+from internal.database_setup.bm25_indexer import build_index
+from internal.database_setup.preprocessing import clean_text 
+from internal.database_setup.embeddings import load_embedding_model, embed_text
+from internal.database_setup.chroma_db import init_db, get_collection, add_documents
 # full chromadb/bm25index length: 13758
 
 def process_file(filepath, course, chunk_size=2048, chunk_overlap=200):
@@ -130,7 +130,7 @@ def main(courses):
     print(f"Unique chunk IDs: {len(set(chunk_ids))}, Total chunks: {len(chunk_ids)}")
 
     # initialize ChromaDB
-    db_client = init_db(db_path="chroma_db")
+    db_client = init_db(db_path="data/chroma_db")
     collection = get_collection(db_client, collection_name="rag_documents")
 
     print("Checking existing documents in ChromaDB:")

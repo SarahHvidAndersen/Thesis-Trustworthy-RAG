@@ -18,6 +18,13 @@ This repository contains a prototype implementation of a Retrieval‑Augmented G
 ├─ uv.lock                     # dependency versions
 └─ README.md 
 
+## Manually add folders
+- add the full data and output folders to immediately run the Cognitive Science Chatbot
+    - the skeleton structure provided here can fill out the output folder as well, but not the entirety of the data folder
+- add a .env file, containing api keys for chatui, huggingface and optionally openai to run ragas testset generation
+    - optionally, just paste the correct key into the streamlit app during runtime
+
+
 ```shell
 # 1. Clone and enter the project
 git clone https://github.com/SarahHvidAndersen/Thesis-Trustworthy-RAG.git

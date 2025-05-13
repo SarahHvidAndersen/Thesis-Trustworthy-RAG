@@ -1,30 +1,28 @@
-# ragas_eval.py
 
-# lex sim isn't working correctly, returns blank spot in csv
+# lex sim isn't working correctly, returns blank spot in csv i think
+# samples compute correctly though, so just re-calculating with redo_ue_score.py
+# instead of re-running full gpu process
 
 import os
 import json
 import time
 from pathlib import Path
 import numpy as np
-
 import pandas as pd
 from tqdm import tqdm
 
-from src_new.internal.core import (
+from internal.core import (
     get_config,
     init_provider,
     init_estimator,
     init_scaler,
-    rag_pipeline,
-)
-from uncertainty_estimation.uncertainty_estimator_factory import (
+    rag_pipeline,)
+from internal.uncertainty_estimation.uncertainty_estimator_factory import (
     get_uncertainty_estimator,
-    compute_uncertainty,
-)
+    compute_uncertainty,)
+
 from dotenv import load_dotenv
 load_dotenv(override=True)
-
 
 def json_safe(obj):
     """Return *obj* serialised with numpy scalars converted to built‑ins."""
@@ -36,7 +34,6 @@ def json_safe(obj):
 
     return json.dumps(obj, default=default, ensure_ascii=False)
 
-
 # Main evaluation loop
 def run_eval(
     input_csv: str,
@@ -46,14 +43,14 @@ def run_eval(
     resume: bool   = True,           # continue where a previous run left off
 ):
     cfg = get_config()
-    provider_name    = cfg['model']['type']
-    model_id         = cfg['model'][f"{provider_name}_model"]
-    temperature      = cfg['generation']['temperature']
-    top_p            = cfg['generation']['top_p']
-    top_k            = cfg['retrieval']['top_k']
-    semantic_weight  = cfg['retrieval'].get('semantic_weight', 0.5)
+    provider_name = cfg['model']['type']
+    model_id = cfg['model'][f"{provider_name}_model"]
+    temperature = cfg['generation']['temperature']
+    top_p = cfg['generation']['top_p']
+    top_k = cfg['retrieval']['top_k']
+    semantic_weight = cfg['retrieval'].get('semantic_weight', 0.5)
 
-    api_url   = os.getenv("CHATUI_GPU_API_URL", "").strip() # gpu run
+    api_url = os.getenv("CHATUI_GPU_API_URL", "").strip() # gpu run
     provider = init_provider(
         model_type="chatui",
         model_id=cfg["model"]["chatui_model"],
@@ -89,7 +86,6 @@ def run_eval(
 
         start = time.time()
 
- #       try:
         result = rag_pipeline(
             query=prompt,
             top_k=top_k,
@@ -98,12 +94,9 @@ def run_eval(
             estimator=lex_est, # computing with lexical similarity in the reg pipeline
             chat_history=[],
         )
-#        except Exception as e:
- #           print(f" Error for prompt: {prompt[:60]}… → {e}")
-  #          continue
 
-        samples        = result.get("samples", [])
-        final_answer   = result.get("final_answer", "")
+        samples = result.get("samples", [])
+        final_answer = result.get("final_answer", "")
         retrieved_docs = result.get("retrieved_docs", [])
 
         # Compute all three uncertainty scores on the SAME sample list
@@ -120,25 +113,25 @@ def run_eval(
         try:
             lex_score = result.get("uncertainty", "")
         except Exception as e:
-            print(f"LexSim error → {e}");   lex_score = None
+            print(f"LexSim error → {e}"); lex_score = None
 
         elapsed = time.time() - start
 
         pending_rows.append({
-            **row.to_dict(),    ## copy *all* of the original CSV columns
-            #"user_input":         prompt, included above
-            "samples":         json_safe(samples),
-            "final_answer":    final_answer,
-            "retrieved_docs":  json_safe(retrieved_docs),
-            "deg_score":       deg_score,
-            "ecc_score":       ecc_score,
-            "lex_score":       lex_score,
-            "time_sec":        round(elapsed, 3),
-            "provider":      provider_name,
-            "model_id":      model_id,
-            "temperature":   temperature,
-            "top_p":         top_p,
-            "top_k":         top_k,
+            **row.to_dict(), ## copy *all* of the original CSV columns
+            #"user_input": prompt, included above
+            "samples": json_safe(samples),
+            "final_answer": final_answer,
+            "retrieved_docs": json_safe(retrieved_docs),
+            "deg_score": deg_score,
+            "ecc_score": ecc_score,
+            "lex_score": lex_score,
+            "time_sec": round(elapsed, 3),
+            "provider": provider_name,
+            "model_id": model_id,
+            "temperature": temperature,
+            "top_p": top_p,
+            "top_k": top_k,
             "semantic_weight": semantic_weight,
         })
 
