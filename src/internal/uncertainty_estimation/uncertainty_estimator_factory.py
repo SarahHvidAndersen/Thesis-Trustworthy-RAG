@@ -27,11 +27,11 @@ def get_uncertainty_estimator(method: str, **kwargs):
     """
     method = method.lower()
     if method == "lexical_similarity":
-        from uncertainty_estimation.lexical_similarity import LexicalSimilarity
+        from internal.uncertainty_estimation.lexical_similarity import LexicalSimilarity
         return LexicalSimilarity(**kwargs)
     elif method == "deg_mat":
-        from uncertainty_estimation.deg_mat import DegMat
-        from uncertainty_estimation.deberta import Deberta
+        from internal.uncertainty_estimation.deg_mat import DegMat
+        from internal.uncertainty_estimation.deberta import Deberta
         # Expect the config to provide these parameters.
         batch_size = kwargs.pop("batch_size")
         device = kwargs.pop("device")
@@ -41,7 +41,7 @@ def get_uncertainty_estimator(method: str, **kwargs):
         nli_model = Deberta("microsoft/deberta-large-mnli", batch_size=batch_size, device=device)
         return DegMat(nli_model, affinity=affinity, verbose=verbose, **kwargs)
     elif method == "eccentricity":
-        from uncertainty_estimation.eccentricity import Eccentricity
+        from internal.uncertainty_estimation.eccentricity import Eccentricity
         return Eccentricity(**kwargs)
     else:
         raise ValueError(f"Unknown uncertainty method: {method}")
@@ -63,7 +63,7 @@ def compute_uncertainty(estimator, samples: list):
     """
     # For eccentricity, we need the semantic matrix.
     # import compute_sim_score from the local common module.
-    from uncertainty_estimation.common import compute_sim_score
+    from internal.uncertainty_estimation.common import compute_sim_score
     import numpy as np
     # detect eccentricity by checking its class name.
     if estimator.__class__.__name__.lower() == "eccentricity":

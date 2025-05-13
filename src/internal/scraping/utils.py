@@ -2,7 +2,7 @@ import re
 import os
 import hashlib
 import json
-from logging_scripts.logging_config import logger
+from logging_utils.scraping_logger import logger
 
 def clean_filename(title):
     """Removes invalid filename characters and replaces spaces with underscores."""

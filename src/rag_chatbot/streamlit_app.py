@@ -179,6 +179,10 @@ if query:
                 api_key_override=api_key,
             )
 
+        if not isinstance(result, dict):        # covers None and wrong types
+            st.warning("There was a problem generating the results dict.")
+            #st.stop()                              # or st.stop()
+        
         st.session_state["history"].append({
             "user": query,
             "assistant": result['final_answer'],

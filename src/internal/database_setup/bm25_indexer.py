@@ -10,7 +10,7 @@ import bm25s, Stemmer
 
 
 def collect_chunks():
-    processed_dir = os.path.join('processed_syllabi')
+    processed_dir = os.path.join('data/processed_syllabi')
     
     chunks = []
     for path in glob.glob(os.path.join(processed_dir, '*', 'processed_chunks.json')):

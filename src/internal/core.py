@@ -4,6 +4,7 @@ from functools import lru_cache
 from dotenv import load_dotenv
 from sentence_transformers import CrossEncoder
 from joblib import load
+from pathlib import Path
 
 from internal.uncertainty_estimation.uncertainty_estimator_factory import get_uncertainty_estimator, compute_uncertainty
 from internal.retrievers.semantic_retriever import load_embedding_model, retrieve_documents
@@ -19,21 +20,39 @@ def get_reranker():
     return CrossEncoder('cross-encoder/ms-marco-MiniLM-L-6-v2')
 
 
+#@lru_cache(maxsize=1)
+#def get_config() -> dict:
+#    """Load and cache the YAML config file."""
+#    cfg_path = os.path.join(os.path.dirname(__file__), "config.yaml")
+#    with open(cfg_path, encoding="utf-8") as f:
+#        return yaml.safe_load(f)
+
 @lru_cache(maxsize=1)
 def get_config() -> dict:
-    """Load and cache the YAML config file."""
-    cfg_path = os.path.join(os.path.dirname(__file__), "config.yaml")
-    with open(cfg_path, encoding="utf-8") as f:
+    """
+    Load and cache the YAML config file.
+
+    Looks for ``config.yaml`` in the project root (two levels above this file).
+    Override with the env‑var ``RAG_CONFIG`` if we need a custom path.
+    """
+    #  allow an override for notebooks / CI
+    env_override = Path(os.getenv("RAG_CONFIG", ""))
+    if env_override.is_file():
+        cfg_path = env_override
+    else:
+        #  repo‑root/config.yaml
+        cfg_path = Path(__file__).resolve().parents[2] / "config.yaml"
+
+    with cfg_path.open(encoding="utf-8") as f:
         return yaml.safe_load(f)
-    
+
 
 def init_provider(model_type: str, model_id: str, api_key: str, cfg: dict):
     model_cfg = cfg['model']
     gen_cfg = cfg['generation']
 
     if model_type == "hf":
-        from providers.provider import HuggingFaceProvider # fix cache
-        # add cache
+        from internal.providers.provider import HuggingFaceProvider # fix cache
 
         return HuggingFaceProvider(
             api_url=model_id,
@@ -43,7 +62,7 @@ def init_provider(model_type: str, model_id: str, api_key: str, cfg: dict):
             max_new_tokens=gen_cfg["max_new_tokens"],
         )
     elif model_type == "chatui":
-        from providers.provider import ChatUIProvider
+        from internal.providers.provider import ChatUIProvider
         #api_key = os.getenv("CHATUI_API_URL")
         return ChatUIProvider(
             api_url=api_key,
@@ -117,7 +136,7 @@ def rag_pipeline(
 
     # semantic retrieval
     model = load_embedding_model(device=device)
-    db_client = init_db(db_path="chroma_db")
+    db_client = init_db(db_path="data/chroma_db")
     collection = get_collection(db_client, collection_name="rag_documents")
     if collection.count() == 0:
         return None

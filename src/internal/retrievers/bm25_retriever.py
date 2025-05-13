@@ -10,11 +10,10 @@ import bm25s
 import Stemmer
 
 
-
 def collect_chunks():
-    #base_dir = os.path.dirname(__file__)                  
+    #base_dir = os.path.dirname(__file__)               
     #project_root  = os.path.dirname(base_dir)                  
-    processed_dir = os.path.join('processed_syllabi')
+    processed_dir = os.path.join('data/processed_syllabi')
 
     chunks = []
     for path in glob.glob(os.path.join(processed_dir, '*', 'processed_chunks.json')):
@@ -23,7 +22,7 @@ def collect_chunks():
     return chunks
 
 def load_index(mmap=True):
-    index_dir = os.path.join("bm25_index")
+    index_dir = os.path.join("data/bm25_index")
 
     # load BM25  raw corpus
     retriever = bm25s.BM25.load(index_dir , mmap=mmap, load_corpus=True)

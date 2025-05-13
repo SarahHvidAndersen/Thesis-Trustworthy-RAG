@@ -50,9 +50,9 @@ uncertainty:
     
     # for each UE method, point to the fitted‐scaler on disk
     paths:
-      lexical_similarity: "fitted_scalers/lex_score_quantile_scaler.joblib"
-      deg_mat: "fitted_scalers/deg_score_quantile_scaler.joblib"
-      eccentricity: "fitted_scalers/ecc_score_quantile_scaler.joblib"
+      lexical_similarity: "data/fitted_scalers/lex_score_quantile_scaler.joblib"
+      deg_mat: "data/fitted_scalers/deg_score_quantile_scaler.joblib"
+      eccentricity: "data/fitted_scalers/ecc_score_quantile_scaler.joblib"
 
   lexical_similarity:
     metric: "rougeL"

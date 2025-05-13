@@ -1,5 +1,3 @@
-# run as module to import correctly
-# python -m scripts.generate_ragas_dataset
 
 import os
 from dotenv import load_dotenv
@@ -26,7 +24,7 @@ from langchain_community.document_loaders import DirectoryLoader, JSONLoader
 from langchain.schema import Document
 
 # Text cleaning
-from database_setup.preprocessing import clean_text
+from internal.database_setup.preprocessing import clean_text
 
 # if we want to see the cache in action, set the logging level to debug
 import logging

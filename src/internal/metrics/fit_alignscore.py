@@ -4,7 +4,8 @@ Adds an 'alignscore' column to output/full_testset_with_predictions.csv
 Uses the vendored LM-Polygraph AlignScorer (no external AlignScore package).
 Works on Python 3.12 with torch 2.x + transformers 4.x on CPU.
 """
-import pathlib, pandas as pd
+import pathlib
+import pandas as pd
 from tqdm.auto import tqdm                      
 from alignscore_utils import AlignScorer
 

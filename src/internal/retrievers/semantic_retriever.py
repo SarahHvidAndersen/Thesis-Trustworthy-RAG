@@ -1,6 +1,6 @@
 import torch
 from sentence_transformers import SentenceTransformer
-from internal.database_setup.chroma_db import get_collection, init_db
+from ..database_setup.chroma_db import get_collection, init_db # can move to main function
 from functools import lru_cache
 
 
@@ -53,7 +53,7 @@ def retrieve_documents(query, model, collection, top_k=5):
 if __name__ == "__main__":
     # Example usage:
     # Initialize (load or create) the database client and collection.
-    db_client = init_db(db_path="chroma_db")
+    db_client = init_db(db_path="data/chroma_db")
     collection = get_collection(db_client, collection_name="rag_documents")
     print(f"Collection count: {collection.count()}")  # Should print 13758
     
