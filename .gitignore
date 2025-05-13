@@ -1,7 +1,23 @@
-# only push code for safe-keeping for now
 
-data/
-output/
+#data/*
+data/bm25_index/*
+data/chroma_db/*
+data/doc_splits/*
+data/fitted_scalers/*
+data/processed_syllabi/*
+data/raw_syllabi/*
+
+#output/*
+output/answered_test_data/*
+output/archive/*
+output/knowledge_graphs/*
+output/quantitative_metrics/*
+output/raw_test_data/*
+output/streamlit_run/*
+output/survey_results/*
+
+!.gitkeep
+!.gitignore
 
 setup.sh
 ucloud_setup.sh
@@ -180,6 +196,3 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
-
-.gitmodules
-constraints.txt
