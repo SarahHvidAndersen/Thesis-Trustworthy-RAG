@@ -12,7 +12,7 @@
 -->
 [![project_license][license-shield]][license-url]
 [![LinkedIn][linkedin-shield]][linkedin-url]
-[![Streamlit](https://img.shields.io/badge/Streamlit-💬_Chatbot-orange?style=flat-square)]
+![Streamlit](https://img.shields.io/badge/Streamlit-💬_Chatbot-orange?style=flat-square)
 
 
 # The Cognitive Science Chatbot, a *trustworthy* RAG demo 🤖🧠 
@@ -62,7 +62,7 @@ The project here has a two-fold purpose. Firstly, it contains a quick-start way 
 - **Confidence Calibration** → red / yellow / black chat bubbles
 - **LLM-based test-set generation** using the **Ragas** framework
 - **Fast dependency resolution** via **uv**  
-- Modular, testable pipeline (data → embeddings → retriever → generator)
+- Modular pipeline (data → embeddings → retriever → generator)
 
 
 <!-- GETTING STARTED -->
@@ -225,22 +225,22 @@ You can now use the GPU ressources untill the timer on your run finishes. The ti
 If you want to re-run the ChatUI app another time, you can now just click the *import parameters* button on the app startup page and select the name you gave your previous job. 
 This will fill out all the neccessary settings automatically.
 
-## 📝 Repository Layout  
-.
-├─ src/
-│  └─ internal/                # main Python package (import internal.*)
-│     ├─ core.py               # package entry‑point for CLI experiments
-│     ├─ retrievers/
-│     ├─ uncertainty_estimator/
-│     └─ ...
-│  └─ rag_chatbot/ 
-│     ├─ streamlit_app.py           # Streamlit UI entry‑point
-│  └─ scripts/ 
-│
-├─ data/                       # manually added
-├─ pyproject.toml              # build/dependency metadata
-├─ uv.lock                     # dependency versions
-└─ README.md 
+## 📝 Project Overview  
+The repository is structured as such (with the 'real' data and output folders):
+
+| Folder / File                          | Description                                                                                |
+|--------------------------------------|------------------------------------------------------------------------------------------------------------|
+| `data/`                              | Raw & processed syllabus data, chroma db and bm25 index, document splits and fitted scalers                                                      |
+| `images/`                           | Images for display purpose in Readme                                        | 
+| `output/`                           | Experiment outputs, data related to test data generation (knowledge graphs, answered test data), quantitative metrics and survey results                                          | 
+| `src/`                              | All scripts, the internal package, the rag_chatbot launcher and a scripts folder (one-time scripts for test data generation)                                   | 
+| `src/internal`                      | Main Python package: pipeline core, retrievers, providers, UQ modules, database setup, metrics, scraping                                    | 
+| `streamlit_app.py`                   | Streamlit UI that launches the interactive chatbot demo                                                   | 
+| `config.yaml`                        | Central settings (retriever parameters, model IDs, model parameters, UE parameters, scaler paths) loaded at runtime                                      |
+| `pyproject.toml`                     | Project metadata & dependency list for **uv venv / uv sync**                                    | 
+| `uv.lock`                           | Dependency versions for uv                                                   |
+
+For a greater overview of the Python code, see the src/README.md.
 
 <!-- LICENSE -->
 ## 📃License
