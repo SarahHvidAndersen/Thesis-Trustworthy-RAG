@@ -12,11 +12,11 @@ def main():
 
     # Extract settings for clarity
     model_type   = model_cfg.get('type')
-    top_k        = retr_cfg.get('top_k')
-    n_samples    = gen_cfg.get('n_samples')
+    top_k = retr_cfg.get('top_k')
+    n_samples = gen_cfg.get('n_samples')
     temperature  = gen_cfg.get('temperature')
-    top_p        = gen_cfg.get('top_p')
-    uq_method    = cfg['uncertainty']['method']
+    top_p = gen_cfg.get('top_p')
+    uq_method = cfg['uncertainty']['method']
 
     # Define your test query here
     query = "What are embeddings in natural language processing? answer in one sentence."

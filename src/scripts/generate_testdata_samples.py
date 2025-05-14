@@ -1,5 +1,5 @@
 
-# lex sim isn't working correctly, returns blank spot in csv i think
+# lex sim may not work correctly, if it returns a blank spot in csv
 # samples compute correctly though, so just re-calculating with redo_ue_score.py
 # instead of re-running full gpu process
 
@@ -50,7 +50,7 @@ def run_eval(
     top_k = cfg['retrieval']['top_k']
     semantic_weight = cfg['retrieval'].get('semantic_weight', 0.5)
 
-    api_url = os.getenv("CHATUI_GPU_API_URL", "").strip() # gpu run
+    api_url = os.getenv("CHATUI_API_URL", "").strip() # gpu run
     provider = init_provider(
         model_type="chatui",
         model_id=cfg["model"]["chatui_model"],

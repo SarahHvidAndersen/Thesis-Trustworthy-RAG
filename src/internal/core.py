@@ -222,10 +222,10 @@ def rag_pipeline(
             retrieved_docs=retrieved_docs,
             history=chat_history
         )
-        print(f"SELECTION MODEL, SELECTION_PROMPT IS {selection_prompt}")
+        #print(f"SELECTION MODEL, SELECTION_PROMPT IS {selection_prompt}")
 
         selection = provider.generate_raw(selection_prompt)
-        print(F"SELECTION MODEL OUTPUT IS: " + selection)
+        #print(F"SELECTION MODEL OUTPUT IS: " + selection)
     
         # parse the reply with regex
         try:
@@ -235,7 +235,7 @@ def rag_pipeline(
         except ValueError:
             choice = 0
 
-        print(f"SELECTION MODEL CHOICE VALUE IS: {choice}")
+        #print(f"SELECTION MODEL CHOICE VALUE IS: {choice}")
         # pick the chosen sample, or abstain
         if 1 <= choice <= len(samples):
             final_answer = samples[choice - 1]
