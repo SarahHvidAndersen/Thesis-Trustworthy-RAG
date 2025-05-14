@@ -25,6 +25,9 @@ The product was developed and designed as part of my thesis at Cognitive Science
   <ol>
     <li>
       <a href="#about-the-project">About The Project</a>
+        <ul>
+        <li><a href="#features">Features</a></li>
+      </ul>
     </li>
     <li>
       <a href="#getting-started">Getting Started</a>
@@ -41,6 +44,7 @@ The product was developed and designed as part of my thesis at Cognitive Science
 
 <!-- ABOUT THE PROJECT -->
 ## 📚 About The Project 
+- pipeline image here
 
 [![Product Name Screen Shot][product-screenshot]](https://example.com)
 
@@ -59,7 +63,7 @@ The project here has a two-fold purpose. Firstly, it contains a quick-start way 
 <!-- GETTING STARTED -->
 ## 🛠️ Getting Started 
 
-To get a local copy up and running follow these steps.
+To get a local copy of this product up and running follow the steps in this section first.
 
 ### 💻 Prerequisites 
 
@@ -111,16 +115,17 @@ Select the correct installer for your environment from the examples below
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ## 🤖 Usage 
-The chatbot developed here can be used to interact with the entire Cognitive Science syllabus at Aarhus university. It was created to be more trustworthy than other bots by grounding its knowledge with a RAG database, supplying the user with uncertainty estimation scores, and providing the exact sources retrieved from the syllabus based on the users query. These steps provide more transparency during chatbot interactions and supports a higher degree of AI literacy among students.
+The chatbot developed here can be used to interact with the entire Cognitive Science syllabus at Aarhus university. It was created to be more trustworthy than other bots by grounding its knowledge with a RAG database, supplying the user with uncertainty estimation scores, and providing the exact sources retrieved from the syllabus based on the users query. These steps provide more transparency during chatbot interactions and supports development of AI literacy among students.
 
+![Chatbot Startpage Screen Shot][startup-screenshot]
 
-Use this space to show useful examples of how a project can be used. Additional screenshots, code examples and demos work well in this space. You may also link to more resources.
+<img src="images/start_page.png" alt="Alt Text" width="900" height="400">
 
 ### 🚀 Quick Start 
 After following the installation guide, you can follow these steps to see the chatbot in action first!
 
 1. Drop-in the *data* and *output* folders
-2. Setup ChatUI or Huggingface
+2. Launch ChatUI or setup Huggingface
 3. Launch the chatbot interface:
   ```python
    streamlit run src/rag_chatbot/streamlit_app.py
@@ -154,11 +159,11 @@ To re-run completely from scratch, make sure to delete this folder first.
   ```python
    uv run -m scripts.generate_ragas_dataset
   ```
-  * This creates a knwoledge graph and a csv test data set of up to 50 samples per split (either with our without the faulty multihop abstract query synthesizer)
-  * All split csv files were merged in the *merge_splits.ipynb* notebook
-  * The full file should be manually annotated and filtered to remove any unfair or very bad model queries generated
-  * Pass the final test data (*full_f-anno_split_testset.csv*) to our Chatbot while calculating all uncertainty scores.
-    ** __Note,__ uses the chatUI provider as default, a run must be active first. Paste the API url into a .env file as CHATUI_API_URL=*your-url*.
+   * This creates a knwoledge graph and a csv test data set of up to 50 samples per split (either with our without the faulty multihop abstract query synthesizer)
+   * All split csv files were merged in the *merge_splits.ipynb* notebook
+   * The full file should be manually annotated and filtered to remove any unfair or very bad model queries generated
+   * Pass the final test data (*full_f-anno_split_testset.csv*) to our Chatbot while calculating all uncertainty scores.
+     ** __Note,__ uses the chatUI provider as default, a run must be active first. Paste the API url into a .env file as CHATUI_API_URL=*your-url*.
    ```python
    uv run -m scripts.generate_testdata_samples
   ```
@@ -177,7 +182,7 @@ To re-run completely from scratch, make sure to delete this folder first.
   ```python
    streamlit  run src/rag_chatbot/streamlit_app.py
   ```
-7. *Optional* Calculate the quantitative results
+7. *Optional* - Calculate the quantitative results
    * Run the cells in the *ue_results.ipynb* notebook
    * You can also run the code to generate the survey results with the *survey_results.ipynb* notebook
 
@@ -242,4 +247,5 @@ graph TD;
 [linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=for-the-badge&logo=linkedin&colorB=555
 [linkedin-url]: https://linkedin.com/in/sarah-hvid-andersen-145747200
 
-[product-screenshot]: images/screenshot.png
+[startup-screenshot]: images/start_page.png
+[response-screenshot]: images/uncertain-response.png
