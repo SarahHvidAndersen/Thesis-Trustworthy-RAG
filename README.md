@@ -10,18 +10,18 @@
 *** for contributors-url, forks-url, etc. This is an optional, concise syntax you may use.
 *** https://www.markdownguide.org/basic-syntax/#reference-style-links
 -->
-[![project_license][license-shield]][license-url]
-[![LinkedIn][linkedin-shield]][linkedin-url]
-![Streamlit](https://img.shields.io/badge/Streamlit-💬_Chatbot-orange?style=flat-square)
+![bot-banner][bot-banner]
 
+<hr>
 
-# The Cognitive Science Chatbot, a *trustworthy* RAG demo 🤖🧠 
+<!--
+# The Cognitive Science Chatbot, a *trustworthy* RAG demo 🤖🧠 -->
 This repository contains a prototype implementation of a Retrieval‑Augmented Generation (RAG) chatbot with uncertainty estimation and sources for each response. The codebase is structured as a proper Python package (internal) and a Streamlit front‑end app interface. 
 The product was developed and designed as part of my thesis at Cognitive Science, Aarhus University. 
 
 <!-- TABLE OF CONTENTS -->
 <details open>
-  <summary>Table of Contents</summary>
+  <summary><strong>Table of Contents</strong></summary>
   <ol>
     <li>
       <a href="#about-the-project">About The Project</a>
@@ -241,6 +241,7 @@ The repository is structured as such (with the 'real' data and output folders):
 | `uv.lock`                           | Dependency versions for uv                                                   |
 
 For a greater overview of the Python code, see the src/README.md.
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 <!-- LICENSE -->
 ## 📃License
@@ -259,17 +260,6 @@ Project Link: [https://github.com/github_username/repo_name](https://github.com/
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-maybe: could also just create a pretty graph elsewhere and show as image
-```mermaid
-graph TD;
-    Q[User Question]-->R[Hybrid Retriever];
-    R-->X[Cross‑Encoder Re‑ranker];
-    X-->G[LLM Provider];
-    G-->U[Uncertainty Estimator];
-    U-->C[Confidence Scaler];
-    C-->S[Streamlit Interface];
-```
-
 
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
@@ -278,5 +268,6 @@ graph TD;
 [linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=for-the-badge&logo=linkedin&colorB=555
 [linkedin-url]: https://linkedin.com/in/sarah-hvid-andersen-145747200
 
+[bot-banner]: images/bot_banner.png
 [startup-screenshot]: images/start_page.png
 [response-screenshot]: images/uncertain_response.png
