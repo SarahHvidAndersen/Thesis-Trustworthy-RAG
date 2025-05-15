@@ -4,7 +4,7 @@ from tqdm.auto import tqdm
 from alignscore_utils import AlignScorer
 
 CSV_IN   = pathlib.Path("output/answered_test_data/testset_with_predictions.csv")
-CKPT     = pathlib.Path("AlignScore-large.ckpt")   # or -large
+CKPT     = pathlib.Path("AlignScore-large.ckpt")   # -large or -base
 BATCH_SZ = 8                                      # safe for CPUs
 
 def main() -> None:

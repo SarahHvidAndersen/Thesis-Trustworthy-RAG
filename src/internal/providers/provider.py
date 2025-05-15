@@ -17,7 +17,7 @@ def build_context_and_hist(retrieved_docs: list[dict], history: list[dict] | Non
         hist_block += "\n"
 
     # Context section
-    context_section = "--- CONTEXT BEGIN ---\n"
+    context_section = " CONTEXT BEGIN \n"
     for idx, doc in enumerate(retrieved_docs, start=1):
         md = doc.get("metadata", {})
         course = md.get("course", "Unknown Course")
@@ -28,7 +28,7 @@ def build_context_and_hist(retrieved_docs: list[dict], history: list[dict] | Non
             f"[{idx}] [Course: {course}] [Title: {title}] [Author: {author}]\n"
             f"{snippet}\n\n"
         )
-    context_section += "--- CONTEXT END ---\n\n"
+    context_section += " CONTEXT END \n\n"
     return hist_block + context_section
 
 class GeneratorProvider:
@@ -62,7 +62,7 @@ class GeneratorProvider:
             "involved in high-order executive functions like planning and decision making.”\n\n"
             "QUESTION: What does the PFC do?\n"
             "ANSWER: It supports executive functions such as planning and decision making. [1]\n"
-            "----------------\n\n"
+            "-\n\n"
         )
 
         # add chat history, if any
@@ -73,7 +73,7 @@ class GeneratorProvider:
             hist_block += "\n"
 
         # format the retrieved context
-        context_section = "--- CONTEXT BEGIN ---\n"
+        context_section = " CONTEXT BEGIN \n"
         for idx, doc in enumerate(retrieved_docs, start=1):
             md = doc.get("metadata", {})
             course = md.get("course", "Unknown Course")
@@ -84,7 +84,7 @@ class GeneratorProvider:
                 f"[{idx}] [Course: {course}] [Title: {title}] [Author: {author}] \n"
                 f"{snippet}\n\n"
             )
-        context_section += "--- CONTEXT END --- \n\n"
+        context_section += " CONTEXT END  \n\n"
 
         # Real question
         question_block = (
@@ -123,7 +123,7 @@ class GeneratorProvider:
             "QUESTION: Of the above choices, which numbered answer best addresses the question:\n"
             "What is the hippocampus involved in?\n"
             "your answer: 2\n"
-            "-----------------\n\n"
+            "--\n\n"
         )
 
         # get system+context via helper
@@ -264,12 +264,12 @@ class ChatUIProvider(GeneratorProvider):
 if __name__ == "__main__":
     from dotenv import load_dotenv
     import os
-    from provider import ChatUIProvider, GeneratorProvider
+    from internal.providers.provider import ChatUIProvider, GeneratorProvider
 
     load_dotenv()
     print("Running provider.py demo…\n")
 
-    # --- 1) Build a toy context for debugging ---
+    #  Build a toy context for debugging 
     retrieved_docs = [
         {
             "id": "chunk1",
@@ -295,7 +295,7 @@ if __name__ == "__main__":
     ]
     user_query = "What does the PFC do?"
 
-    # --- 2) Inspect the QA prompt ---
+    #  Inspect the QA prompt 
     qa_prompt = GeneratorProvider.build_prompt(
         query=user_query,
         retrieved_docs=retrieved_docs,
@@ -305,7 +305,7 @@ if __name__ == "__main__":
     print(qa_prompt)
     print("\n" + "="*80 + "\n")
 
-    # --- 3) Inspect the selection prompt ---
+    # Inspect the selection prompt 
     samples = [
         "It supports planning and decision making.",
         "It helps in memory consolidation.",
@@ -321,9 +321,8 @@ if __name__ == "__main__":
     print(sel_prompt)
     print("\n" + "="*80 + "\n")
 
-    # --- 4) send selection prompt through ChatUIProvider ---
-    #chatui_api = os.getenv("CHATUI_API_URL", "")
-    chatui_api = os.getenv("CHATUI_GPU_API_URL")
+    #  send selection prompt through ChatUIProvider 
+    chatui_api = os.getenv("CHATUI_API_URL", "")
     if chatui_api:
         chatui = ChatUIProvider(
             api_url=chatui_api,
