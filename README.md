@@ -102,16 +102,16 @@ Select the correct installer for your environment from the examples below
    ```
 2. Create the uv env
    ```sh
+   uv venv
+   ```
+3. Activate the new env
+   ```sh
    # on macOS and Linux.
-   uv venv .venv
+   source .venv/bin/activate 
    ```
    ```sh
    # on Windows
    .venv\Scripts\Activate
-   ```
-3. Activate the new env
-   ```sh
-   source .venv/bin/activate 
    ```
 4. Synchronize locked dependencies
    ```sh
@@ -137,6 +137,7 @@ After following the installation guide, you can follow these steps to see the ch
    streamlit run src/rag_chatbot/streamlit_app.py
    ```
 4. Input you provider API key in the Provider settings and start chatting!
+   * __Note:__ For the ChatUI link it must be formatted like this: https://app-[NAME-YOU-CHOSE]-link.cloud.aau.dk/api/generate, otherwise the request fails
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -258,10 +259,12 @@ For more details about the project or other questions, feel free to reach out to
 
 Sarah Hvid Andersen - au644610@cas.au.dk
 
-Project Link: [https://github.com/github_username/repo_name](https://github.com/github_username/repo_name)
+Project Link: [https://github.com/SarahHvidAndersen/Thesis-Trustworthy-RAG](https://github.com/SarahHvidAndersen/Thesis-Trustworthy-RAG/tree/main)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
+## Acknowledgements
+The uncertainty estimation methods code were derived from the [lm-polygraph repository](https://github.com/IINemo/lm-polygraph/tree/main) (vashurin et al. 2025)
 
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
