@@ -10,18 +10,18 @@
 *** for contributors-url, forks-url, etc. This is an optional, concise syntax you may use.
 *** https://www.markdownguide.org/basic-syntax/#reference-style-links
 -->
-[![project_license][license-shield]][license-url]
-[![LinkedIn][linkedin-shield]][linkedin-url]
-![Streamlit](https://img.shields.io/badge/Streamlit-💬_Chatbot-orange?style=flat-square)
+![bot-banner][bot-banner]
 
+<hr>
 
-# The Cognitive Science Chatbot, a *trustworthy* RAG demo 🤖🧠 
+<!--
+# The Cognitive Science Chatbot, a *trustworthy* RAG demo 🤖🧠 -->
 This repository contains a prototype implementation of a Retrieval‑Augmented Generation (RAG) chatbot with uncertainty estimation and sources for each response. The codebase is structured as a proper Python package (internal) and a Streamlit front‑end app interface. 
 The product was developed and designed as part of my thesis at Cognitive Science, Aarhus University. 
 
 <!-- TABLE OF CONTENTS -->
 <details open>
-  <summary>Table of Contents</summary>
+  <summary><strong>Table of Contents</strong></summary>
   <ol>
     <li>
       <a href="#about-the-project">About The Project</a>
@@ -30,7 +30,7 @@ The product was developed and designed as part of my thesis at Cognitive Science
       </ul>
     </li>
     <li>
-      <a href="#getting-started">Getting Started</a>
+      <a href="#%EF%B8%8Fgetting-started">Getting Started</a>
       <ul>
         <li><a href="#prerequisites">Prerequisites</a></li>
         <li><a href="#installation">Installation</a></li>
@@ -38,24 +38,24 @@ The product was developed and designed as part of my thesis at Cognitive Science
     </li>
     <li><a href="#usage">Usage</a></li>
        <ul>
-         <li><a href="#quickstart">Quick Start</a></li>
-         <li><a href="#rerunning-all-pipelines">Re-running all pipelines</a></li>
-         <li><a href="#configuration">Configuration</a></li>
+         <li><a href="#quick-start">Quick Start</a></li>
+         <li><a href="#re-running-all-pipelines">Re-running all pipelines</a></li>
+         <li><a href="#%EF%B8%8Fconfiguration">Configuration</a></li>
        </ul>
     <li><a href="#chatui-setup">ChatUI Setup</a></li>
-    <li><a href="#repository-layout">Repository Layout</a></li>
+    <li><a href="#project-overview">Project Overview</a></li>
     <li><a href="#license">License</a></li>
-    <li><a href="#contact">Contact</a></li>
+    <li><a href="#%EF%B8%8Fcontact">Contact</a></li>
   </ol>
 </details>
 
 <!-- ABOUT THE PROJECT -->
-## 📚 About The Project 
+## 📚About The Project
 - pipeline image here
 
 The project here has a two-fold purpose. Firstly, it contains a quick-start way to run the Cognitive Science chatbot with all necessary pre and post-processing supplied in a separate file. Secondly, it contains all code to reproduce the steps taken as part of the Thesis project. Additionally, the repository is constructed in a modular way, to allow the same code to work with a different raw dataset, adding another uncertainty estimation method, a different retriever or more!
 
-### 🌟 Features 
+### 🌟Features
 - **Hybrid Retrieval (BM25 + dense)** with cross‑encoder re‑ranking  
 - **Uncertainty Quantification** (Lexical Similarity, Degree Matrix NLI, Eccentricity)
 - **Streamlit UI** with provider settings & parameter sliders 
@@ -66,11 +66,11 @@ The project here has a two-fold purpose. Firstly, it contains a quick-start way 
 
 
 <!-- GETTING STARTED -->
-## 🛠️ Getting Started 
+## 🛠️Getting Started
 
 To get a local copy of this product up and running follow the steps in this section first.
 
-### 📣 Prerequisites 
+### 📣Prerequisites
 
 * Python ≥ 3.12
 * Install the [uv](https://github.com/astral-sh/uv) package manager.
@@ -93,7 +93,7 @@ Select the correct installer for your environment from the examples below
 * You need the full contents of the *data* and *output* folder at hand. These are attached to the thesis hand-in and must be dropped in place in the corresponding location of this repository.
 * *Optional* - To re-run the Ragas testset generation, you need an [OpenAI API key](https://platform.openai.com/docs/api-reference/introduction). Note that nearly all of the API calls are stored in the Ragas cache shared with you in the data folder.
 
-### 💻 Installation
+### 💻Installation
 
 1. Clone the repository
    ```sh
@@ -119,7 +119,7 @@ Select the correct installer for your environment from the examples below
    ```
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-## 🤖 Usage 
+## 🤖Usage
 The chatbot developed here can be used to interact with the entire Cognitive Science syllabus at Aarhus university. It was created to be more trustworthy than other bots by grounding its knowledge with a RAG database, supplying the user with uncertainty estimation scores, and providing the exact sources retrieved from the syllabus based on the users query. These steps provide more transparency during chatbot interactions and supports development of AI literacy among students.
 
 ![Chatbot Startpage Screen Shot][startup-screenshot]
@@ -127,7 +127,7 @@ The chatbot developed here can be used to interact with the entire Cognitive Sci
 
 ![Chatbot Response Screen Shot][response-screenshot]
 
-### 🚀 Quick Start 
+### 🚀Quick Start
 After following the installation guide, you can follow these steps to see the chatbot in action first!
 
 1. Drop-in the *data* and *output* folders
@@ -138,7 +138,9 @@ After following the installation guide, you can follow these steps to see the ch
    ```
 4. Input you provider API key in the Provider settings and start chatting!
 
-### 🎓 Re-running all pipelines
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+### 🎓Re-running all pipelines
 The codebase is modular. If you wish to swap out any element such as the database itself or the retriever you can!
 The following passage however, will assume access to the raw data from the Cognitive Science Syllabus, that was gathered as part of this thesis. It will also assume some background knowledge provided in the accompanying thesis paper, to not go into depth with explanations of *why* decisions were made, but rather focus on *how* to reproduce all original results.
 With the raw data folder in place, all pipelines can be re-fitted. __Note__ that all scripts should be run with uv and as a module, to utilize the absolute import paths. 
@@ -194,12 +196,12 @@ To re-run completely from scratch, make sure to delete this folder first.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-### ⚙️ Configuration
+### ⚙️Configuration
 All configuration settings can be seen and edited in the *config.yaml* file.
 The project also originally contains a .env file with the ChatUI, Huggingface and OpenAI Api keys set.
 Adding your personal api keys will work well with the scripts and allow default import, but is not necessary to run the Chatbot App.
 
-## 🌐 ChatUI Setup
+## 🌐ChatUI Setup
 ChatUI is an app that is available from the UCloud platform, which is available to students at Aarhus University. As such, this is the primary provider used in this project, as it is one of the only ways to gain access to a GPU powered model API which is absolutely necessary to run a chatbot such as this one. This section will provide a simple step-by-step guide on how to setup ChatUI for the Cognitive Science chatbot.
 
 1. Make sure you have a project on ucloud with granted GPU credits (see the [documentation](https://docs.cloud.sdu.dk/guide/resources-intro.html) for more details on this step)
@@ -225,7 +227,7 @@ You can now use the GPU ressources untill the timer on your run finishes. The ti
 If you want to re-run the ChatUI app another time, you can now just click the *import parameters* button on the app startup page and select the name you gave your previous job. 
 This will fill out all the neccessary settings automatically.
 
-## 📝 Project Overview  
+## 📝Project Overview
 The repository is structured as such (with the 'real' data and output folders):
 
 | Folder / File                          | Description                                                                                |
@@ -241,6 +243,7 @@ The repository is structured as such (with the 'real' data and output folders):
 | `uv.lock`                           | Dependency versions for uv                                                   |
 
 For a greater overview of the Python code, see the src/README.md.
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 <!-- LICENSE -->
 ## 📃License
@@ -250,7 +253,7 @@ Distributed under the project_license. See `LICENSE.txt` for more information.
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 <!-- CONTACT -->
-## 🗨️ Contact 
+## 🗨️Contact
 For more details about the project or other questions, feel free to reach out to me!
 
 Sarah Hvid Andersen - au644610@cas.au.dk
@@ -258,17 +261,6 @@ Sarah Hvid Andersen - au644610@cas.au.dk
 Project Link: [https://github.com/github_username/repo_name](https://github.com/github_username/repo_name)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-maybe: could also just create a pretty graph elsewhere and show as image
-```mermaid
-graph TD;
-    Q[User Question]-->R[Hybrid Retriever];
-    R-->X[Cross‑Encoder Re‑ranker];
-    X-->G[LLM Provider];
-    G-->U[Uncertainty Estimator];
-    U-->C[Confidence Scaler];
-    C-->S[Streamlit Interface];
-```
 
 
 <!-- MARKDOWN LINKS & IMAGES -->
@@ -278,5 +270,6 @@ graph TD;
 [linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=for-the-badge&logo=linkedin&colorB=555
 [linkedin-url]: https://linkedin.com/in/sarah-hvid-andersen-145747200
 
+[bot-banner]: images/bot_banner.png
 [startup-screenshot]: images/start_page.png
 [response-screenshot]: images/uncertain_response.png
