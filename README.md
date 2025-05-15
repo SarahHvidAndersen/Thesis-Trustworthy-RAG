@@ -150,7 +150,7 @@ To re-run completely from scratch, make sure to delete this folder first.
 
 1. Run the *course_pipeline.py* 
   ```python
-   uv run -m internal.course_pipeline.py
+   uv run -m internal.course_pipeline
    ```
 2. Run the *embeddings_pipeline.py* 
   ```python
