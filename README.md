@@ -175,7 +175,7 @@ To re-run completely from scratch, make sure to delete this folder first.
      ** __Note,__ uses the chatUI provider as default, a run must be active first. Paste the API url into a .env file as CHATUI_API_URL=*your-url*.
    ```python
    uv run -m scripts.generate_testdata_samples
-  ```
+   ```
 4. Calculate Alignscore between the silver answer and our chatbot answer by running *fit_alignscore.py*
   ```python
    uv run -m internal.metrics.fit_alignscore
