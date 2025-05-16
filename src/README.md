@@ -1,9 +1,11 @@
+<a id="readme-top"></a>
+
 ## Source-Code Guide for `src/`
 The `src` folder is organised as a package-style workspace. Production code lives in the `internal` package and in the small `rag_chatbot` front‑end folder. Utility or one-off scripts are collected in `scripts`. 
 Most python scripts contain a main block meant to quickly debug that file alone. 
-Additionally, every file in internal/uncertainty_estimation can be imported autonomously; they share the same call signature and are hot-swappable via get_uncertainty_estimator().
+Additionally, every file in *internal/uncertainty_estimation* can be imported autonomously; they share the same call signature and are hot-swappable via get_uncertainty_estimator().
 
-### Structural Overview
+## Structural Overview
 <pre> ``` 
 src/
 ├─ archive/                  # legacy one-time scripts and experiments
@@ -20,7 +22,65 @@ src/
 └─ thesis_trustworthy_rag/   # package entry-point
 ``` </pre>
 
-### File-level description
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+## 🎓Re-running all pipelines
+The codebase is modular. If you wish to swap out any element such as the database itself or the retriever you can!
+The following passage however, will assume access to the raw data from the Cognitive Science Syllabus, that was gathered as part of this thesis. It will also assume some background knowledge provided in the accompanying thesis paper, to not go into depth with explanations of *why* decisions were made, but rather focus on *how* to reproduce all original results.
+With the raw data folder in place, all pipelines can be re-fitted. __Note__ that all scripts should be run with uv and as a module, to utilize the absolute import paths. 
+Additionally, the computation of embeddings is time-consuming on a cpu, so the script checks whether these files are already present in the *processed_syllabi* folder. 
+To re-run completely from scratch, make sure to delete this folder first.
+
+1. Run the *course_pipeline.py* 
+  ```python
+   uv run -m internal.course_pipeline
+   ```
+2. Run the *embeddings_pipeline.py* 
+  ```python
+   uv run -m internal.embeddings_pipeline
+  ```
+3. Re-generate test data with *generate_ragas_dataset.py* __or__ verify that the file *testset_with_predictions.csv* is present in the *output/answered_test_data* folder.
+   * Create a .env file in the root (Thesis-Trustworthy-RAG) and input your OpenAI key as: OPENAI_API_KEY=*sk-... your-key*
+   * Due to issues with too large knowledge graphs and potentially specific nodes in some graphs, some of Ragas features crashed, the test data here was generated in splits.
+   * Run the *split_documents.py* file first:
+   ```python
+   uv run -m scripts.split_documents
+   ```
+   * This creates data splits of up to 100 documents
+   * Run the *generate_ragas_dataset.py* on each of the splits
+    ```python
+     uv run -m scripts.generate_ragas_dataset
+    ```
+   * This creates a knwoledge graph and a csv test data set of up to 50 samples per split (either with our without the faulty multihop abstract query synthesizer)
+   * All split csv files were merged in the *merge_splits.ipynb* notebook
+   * The full file should be manually annotated and filtered to remove any unfair or very bad model queries generated
+   * Pass the final test data (*full_f-anno_split_testset.csv*) to our Chatbot while calculating all uncertainty scores.
+     ** __Note,__ uses the chatUI provider as default, a run must be active first. Paste the API url into a .env file as CHATUI_API_URL=*your-url*.
+   ```python
+   uv run -m scripts.generate_testdata_samples
+   ```
+4. Calculate Alignscore between the silver answer and our chatbot answer by running *fit_alignscore.py*
+  ```python
+   uv run -m internal.metrics.fit_alignscore
+  ```
+5. Fit the scalers on the raw uncertainty scores with *fit_scaler.py*
+  ```python
+   uv run -m internal.metrics.fit_scaler
+  ```
+6. You can now run both the terminal based *run_cli.py* and the *streamlit_app.py* script
+  ```python
+   uv run -m internal.run_cli
+  ```
+  ```python
+   streamlit  run src/rag_chatbot/streamlit_app.py
+  ```
+7. *Optional* - Calculate the quantitative results
+   * Run the cells in the *ue_results.ipynb* notebook
+   * You can also run the code to generate the survey results with the *survey_results.ipynb* notebook
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+## File-level description
 | Path                                                               | Description                                                                               | Entrypoints & Main Functions                                  |
 | ------------------------------------------------------------------ | -------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
 | `internal/core.py`                                                 | Orchestrates the RAG pipeline: retrieval → re-rank → generation → uncertainty → calibration. | `run_rag`, `rag_pipeline`, `get_config`                      |
@@ -65,3 +125,4 @@ src/
 
 ❕ Note that some of the scripts require the raw data to run out-of-the-box, which is not available on GitHub
 
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
