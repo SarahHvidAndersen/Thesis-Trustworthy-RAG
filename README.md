@@ -137,7 +137,7 @@ After following the installation guide, you can follow these steps to see the ch
    streamlit run src/rag_chatbot/streamlit_app.py
    ```
 4. Input you provider API key in the Provider settings and start chatting!
-   * __Note:__ For the ChatUI link it must be formatted like this: https://app-[NAME-YOU-CHOSE]-link.cloud.aau.dk/api/generate, otherwise the request fails
+   * __Note:__ For the ChatUI link it must be formatted like this: https://app-[NAME-YOU-CHOSE].cloud.aau.dk/api/generate, otherwise the request fails
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
