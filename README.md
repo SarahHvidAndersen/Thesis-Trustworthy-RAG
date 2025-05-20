@@ -124,10 +124,7 @@ Select the correct installer for your environment from the examples below:
 ## 🤖 Usage
 The chatbot developed here can be used to interact with the entire Cognitive Science syllabus at Aarhus university. It was created to be more trustworthy than other bots by grounding its knowledge with a RAG database, supplying the user with uncertainty estimation scores, and providing the exact sources retrieved from the syllabus based on the users query. These steps provide more transparency during chatbot interactions and supports development of AI literacy among students.
 
-<video width="640" height="360" controls>
-  <source src="https://github.com/user-attachments/assets/f3170d7b-e5e1-424e-b383-2fbff2555962" type="video/mp4">
-  Your browser does not support the video tag.
-</video>
+https://github.com/user-attachments/assets/f3170d7b-e5e1-424e-b383-2fbff2555962
 
 ### 🚀 Quick Start
 After following the installation guide, you can follow these steps to see the chatbot in action first!
@@ -185,9 +182,13 @@ This will fill out all the neccessary settings automatically.
 
 ## 📝 Project Overview
 The full RAG pipeline can be seen here:
-![rag-pipeline][rag-pipeline]
+<!-- ![my_rag_pipeline_figure](https://github.com/user-attachments/assets/03d4cfb8-acc9-49d9-bb3c-618410814eab) -->
 
-For a greater overview of the Python code of each module, including a full reproduction guide, see the [src/README.md](https://github.com/SarahHvidAndersen/Thesis-Trustworthy-RAG/blob/main/src/README.md)
+<img src="https://github.com/user-attachments/assets/03d4cfb8-acc9-49d9-bb3c-618410814eab" width=60% height=60%>
+
+<!-- ![rag-pipeline][rag-pipeline] -->
+
+For a greater overview of the Python code of each module, including a full reproduction guide, see the [src/README.md](https://github.com/SarahHvidAndersen/Thesis-Trustworthy-RAG/blob/main/src/README.md).
 The repository is structured as such:
 
 | Folder / File                          | Description                                                                                |
