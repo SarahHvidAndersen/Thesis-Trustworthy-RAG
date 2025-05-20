@@ -3,7 +3,8 @@ import pandas as pd
 from internal.uncertainty_estimation.uncertainty_estimator_factory import (
     get_uncertainty_estimator, compute_uncertainty)
 
-INPUT = "output/answered_test_data/testset_with_predictions.csv"
+#INPUT = "output/answered_test_data/testset_with_predictions.csv"
+INPUT = "output/quantitative_metrics/alignscore_testset_with_predictions.csv"
 OUTPUT = INPUT  # overwrite
 
 #  utilities 

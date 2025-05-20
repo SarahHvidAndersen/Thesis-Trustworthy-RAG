@@ -1,4 +1,12 @@
 
+from functools import lru_cache
+
+@lru_cache(maxsize=1)
+def _cached_deberta(model_name: str, batch_size: int, device: str):
+    from internal.uncertainty_estimation.deberta import Deberta
+    return Deberta(model_name, batch_size=batch_size, device=device)
+
+
 def get_uncertainty_estimator(method: str, **kwargs):
     """
     Returns an instantiated uncertainty estimator based on the specified method.
@@ -37,15 +45,14 @@ def get_uncertainty_estimator(method: str, **kwargs):
         device = kwargs.pop("device")
         affinity = kwargs.pop("affinity")
         verbose = kwargs.pop("verbose")
-        # Initialize the NLI model.
-        nli_model = Deberta("microsoft/deberta-large-mnli", batch_size=batch_size, device=device)
+        # Initialize the cached NLI model
+        nli_model = _cached_deberta("microsoft/deberta-large-mnli", batch_size, device)
         return DegMat(nli_model, affinity=affinity, verbose=verbose, **kwargs)
     elif method == "eccentricity":
         from internal.uncertainty_estimation.eccentricity import Eccentricity
         return Eccentricity(**kwargs)
     else:
         raise ValueError(f"Unknown uncertainty method: {method}")
-
 
 
 def compute_uncertainty(estimator, samples: list):

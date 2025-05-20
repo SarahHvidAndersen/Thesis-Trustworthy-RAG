@@ -1,11 +1,11 @@
 import os, yaml, sys
 import re
 from functools import lru_cache
-from getpass import getpass
 from dotenv import load_dotenv, set_key
 from sentence_transformers import CrossEncoder
 from joblib import load
 from pathlib import Path
+from urllib.parse import urlparse, urlunparse
 
 from internal.uncertainty_estimation.uncertainty_estimator_factory import get_uncertainty_estimator, compute_uncertainty
 from internal.retrievers.semantic_retriever import load_embedding_model, retrieve_documents
@@ -13,39 +13,116 @@ from internal.database_setup.chroma_db import init_db, get_collection
 from internal.retrievers.bm25_retriever import bm25_retrieve
 from internal.providers.provider import GeneratorProvider
 
+
 load_dotenv(override=True)
 
 _ENV_FILE = Path('.') / '.env'                     # repo root → “.env”
 
+DEFAULT_DOMAIN_SUFFIX = ".cloud.aau.dk"
+DEFAULT_PREFIX = "app-"
+REQUIRED_PATH = "/api/generate"
+
+def format_chatui_url(raw: str) -> str:
+    """
+    Normalise *anything* the user might type into the correct ChatUI endpoint:
+
+        cool-bot                        → https://app-cool-bot.cloud.aau.dk/api/generate
+        app-cool-bot.cloud.aau.dk       → https://app-cool-bot.cloud.aau.dk/api/generate
+        https://app-cool-bot.cloud.aau.dk → https://app-cool-bot.cloud.aau.dk/api/generate
+        https://app-cool-bot.cloud.aau.dk/api/generate → unchanged
+    """
+    if not raw:
+        return ""
+
+    raw = raw.strip()
+
+    # If it already looks like a URL, parse it
+    if raw.startswith(("http://", "https://")):
+        parts = urlparse(raw)
+        scheme = "https"                        # force HTTPS
+        netloc = parts.netloc or ""             # host + optional port
+        path   = parts.path or ""
+    else:
+        # Not a full URL: decide if it's a bare name or a host 
+        if "." in raw:
+            # e.g. app-cool-bot.cloud.aau.dk
+            netloc = raw
+        else:
+            # e.g. cool-bot  → add prefix/suffix
+            netloc = f"{DEFAULT_PREFIX}{raw}{DEFAULT_DOMAIN_SUFFIX}"
+        scheme = "https"
+        path   = ""
+
+    # Guarantee the trailing /api/generate
+    if not path.rstrip("/").endswith(REQUIRED_PATH):
+        path = path.rstrip("/") + REQUIRED_PATH
+
+    # Compose the final, normalised URL 
+    return urlunparse((scheme, netloc.rstrip("/"), path, "", "", ""))
+
+def ensure_chatui_url(var_name: str = "CHATUI_API_URL") -> str:
+    """
+    Returns a *valid* ChatUI endpoint URL.
+
+    If the environment variable already exists, it is normalised and returned.
+    Otherwise the user is prompted (plain `input`, so they can see what they
+    paste); the final URL is written back to `.env` for next time.
+    """
+    existing = os.getenv(var_name)
+    if existing:
+        return format_chatui_url(existing)
+
+    if not sys.stdin.isatty():   # running non-interactive (CI, pytest, …)
+        raise RuntimeError(
+            f"{var_name} is not set and no TTY is available for a prompt."
+        )
+
+    # Prompt user
+    raw = input(
+        "ChatUI instance name or full host link "
+        "(e.g. cool-bot  OR  app-cool-bot.cloud.aau.dk): "
+    ).strip()
+    if not raw:
+        raise RuntimeError("Empty value entered – aborting.")
+
+    url = format_chatui_url(raw)
+
+    # Persist for future runs (silently ignore read-only .env files)
+    try:
+        set_key(_ENV_FILE, var_name, url)
+        print(f"[config] Saved {var_name}={url} to {_ENV_FILE}")
+    except Exception:
+        pass
+
+    return url
+
+
 def ensure_secret(var_name: str, prompt: str) -> str:
     """
-    Return `os.getenv(var_name)` if set, otherwise prompt the user
-    (only when running interactive).  The captured key is
-    written back to `.env` so the next run is silent.
-
-    Raises RuntimeError if we are in a non‑interactive context.
+    Ensure `var_name` is present in the environment.
+    Falls back to an interactive prompt (echo-on) and stores the value in `.env`.
     """
-    import os
-    key = os.getenv(var_name)
-    if key:                                   # already set
-        return key.strip()
+    value = os.getenv(var_name)
+    if value:
+        return value.strip()
 
-    if not sys.stdin.isatty():                # e.g. pytest, CI
-        raise RuntimeError(f"{var_name} is not set and no TTY is available for an interactive prompt.")
+    if not sys.stdin.isatty():
+        raise RuntimeError(
+            f"{var_name} is not set and no TTY is available for a prompt."
+        )
 
-    # Prompt – getpass hides the input
-    key = getpass(prompt).strip()
-    if not key:
-        raise RuntimeError("Empty key entered – aborting.")
+    value = input(prompt).strip()
+    if not value:
+        raise RuntimeError("Empty value entered – aborting.")
 
-    # Persist for next time (silently ignore if .env is read‑only)
     try:
-        set_key(_ENV_FILE, var_name, key)
+        set_key(_ENV_FILE, var_name, value)
         print(f"[config] Saved {var_name} to {_ENV_FILE}")
     except Exception:
         pass
 
-    return key
+    return value
+
 
 @lru_cache(maxsize=1)
 def get_reranker():
@@ -155,6 +232,7 @@ def rag_pipeline(
     db_client = init_db(db_path="data/chroma_db")
     collection = get_collection(db_client, collection_name="rag_documents")
     if collection.count() == 0:
+        print('collection count is 0! empty chromadb database')
         return None
     semantic_docs = retrieve_documents(embed_query_text, model, collection, top_k=sem_k)
     for doc in semantic_docs:
@@ -293,9 +371,8 @@ def run_rag(
                 "HF_API_KEY", "Enter your Hugging Face API key (starts with hf_…): "
             )
     elif model_type == "chatui":
-        api_key = (api_key_override or "").strip() or ensure_secret(
-            "CHATUI_API_URL", "Enter the ChatUI inference endpoint URL: "
-        )
+        api_key = (api_key_override or "").strip() or ensure_chatui_url()
+            #"CHATUI_API_URL", "Enter the ChatUI [NAME-YOU-CHOSE] or full link: "
     else:
         raise ValueError(f"Unsupported model_type: {model_type}")
 

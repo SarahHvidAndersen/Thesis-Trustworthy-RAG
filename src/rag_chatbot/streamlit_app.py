@@ -4,7 +4,7 @@ import logging
 logging.getLogger("streamlit.watcher.local_sources_watcher").setLevel(logging.ERROR)
 
 import streamlit as st
-from ui_helpers import render_chat_history
+from ui_helpers import render_chat_history, format_chatui_url
 from internal.core import run_rag, get_config
 from internal.logging_utils.csv_logger import initialize_csv, log_experiment
 import json, os
@@ -77,13 +77,25 @@ provider = prov_expander.selectbox(
     index=["chatui", "hf"].index(model_cfg.get('type', 'chatui'))
 )
 
-# set API Key / URL
+# set API Key / URL, add here
+CHATUI_HELP = """
+Paste **either** the link name you chose **or** the host link.
+Find it under Links on the ChatUI launcher page.
+
+Example:
+    Name you chose: cool-bot
+    What to paste:  cool-bot **or** app-cool-bot.cloud.aau.dk
+"""
 if provider == "chatui":
-    api_key = prov_expander.text_input(
-        "ChatUI API URL",
-        value=os.getenv("CHATUI_API_URL", model_cfg.get('chatui_api_url', '')),
-        type="password"
-    )
+    raw_input = prov_expander.text_input(
+        "ChatUI API",
+        value=os.getenv("CHATUI_API_URL", model_cfg.get("chatui_api_url", "")),
+        type="password", placeholder="[NAME-YOU-CHOSE] or app-[NAME-YOU-CHOSE].cloud.aau.dk",
+        help=CHATUI_HELP)
+
+    # Build the real URL
+    api_key = format_chatui_url(raw_input)
+
 else:
     api_key = prov_expander.text_input(
         "Huggingface API Key",
