@@ -51,7 +51,7 @@ The product was developed and designed as part of my thesis at Cognitive Science
 
 <!-- ABOUT THE PROJECT -->
 ## 📚 About The Project
-- pipeline image here
+![rag-pipeline][rag-pipeline]
 
 The project here has a two-fold purpose. Firstly, it contains a quick-start way to run the Cognitive Science chatbot with all necessary pre and post-processing supplied in a separate file. Secondly, it contains all code to reproduce the steps taken as part of the Thesis project. Additionally, the repository is constructed in a modular way, to allow the same code to work with a different raw dataset, adding another uncertainty estimation method, a different retriever or more!
 
@@ -141,7 +141,7 @@ After following the installation guide, you can follow these steps to see the ch
    streamlit run src/rag_chatbot/streamlit_app.py
    ```
 4. Input you provider API key in the Provider settings and start chatting!
-   * __Note:__ For the ChatUI link it must be formatted like this: https://app-[NAME-YOU-CHOSE].cloud.aau.dk/api/generate, otherwise the request fails
+   * __Note:__ For the ChatUI link either paste the exact name you chose, or the link that can be copied directly from the ChatUI launcher page.
 
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
@@ -233,5 +233,6 @@ The uncertainty estimation methods code were derived from the [lm-polygraph repo
 [linkedin-url]: https://linkedin.com/in/sarah-hvid-andersen-145747200
 
 [bot-banner]: images/bot_banner.png
+[rag-pipeline]: images/my_rag_pipeline_figure.png
 [startup-screenshot]: images/start_page.png
 [response-screenshot]: images/uncertain_response.png
