@@ -125,6 +125,7 @@ Select the correct installer for your environment from the examples below:
 The chatbot developed here can be used to interact with the entire Cognitive Science syllabus at Aarhus university. It was created to be more trustworthy than other bots by grounding its knowledge with a RAG database, supplying the user with uncertainty estimation scores, and providing the exact sources retrieved from the syllabus based on the users query. These steps provide more transparency during chatbot interactions and supports development of AI literacy among students.
 
 https://github.com/user-attachments/assets/f3170d7b-e5e1-424e-b383-2fbff2555962
+__Note__ that the video was cut to remove thinking, the true speed of the chatbot response depends on the computational power available, but expect a higher latency regardless. 
 
 ### 🚀 Quick Start
 After following the installation guide, you can follow these steps to see the chatbot in action first!
