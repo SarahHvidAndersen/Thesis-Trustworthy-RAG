@@ -133,8 +133,12 @@ __Note__ that the video was cut to remove thinking, the true speed of the chatbo
 After following the installation guide, you can follow these steps to see the chatbot in action first!
 
 1. Drop-in the *data* and *output* folders
-2. Launch ChatUI or setup Huggingface
-3. Launch the chatbot interface:
+   * Run a terminal command to make sure that you have read/write acess to the ChromaDB database
+  ```bash
+   chmod -R u+rw data/chroma_db
+   ```
+3. Launch ChatUI or setup Huggingface
+4. Launch the chatbot interface:
   ```python
    streamlit run src/rag_chatbot/streamlit_app.py
    ```
