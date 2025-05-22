@@ -51,8 +51,6 @@ The product was developed and designed as part of my thesis at Cognitive Science
 
 <!-- ABOUT THE PROJECT -->
 ## 📚 About The Project
-- pipeline image here
-
 The project here has a two-fold purpose. Firstly, it contains a quick-start way to run the Cognitive Science chatbot with all necessary pre and post-processing supplied in a separate file. Secondly, it contains all code to reproduce the steps taken as part of the Thesis project. Additionally, the repository is constructed in a modular way, to allow the same code to work with a different raw dataset, adding another uncertainty estimation method, a different retriever or more!
 
 ### 🌟 Features
@@ -92,7 +90,7 @@ Select the correct installer for your environment from the examples below:
   pip install uv
   ```
 * You need API provider access from UCloud __*or*__ Huggingface.
-  * Setup a GPU powered ChatUI app on UCloud. Follow the guide written out below. See more at [ChatUI documentation](https://docs.cloud.sdu.dk/Apps/chat-ui.html)
+  * Setup a GPU powered ChatUI host on UCloud. Follow the included <a href="#-chatui-setup">ChatUI Setup</a> guide. See more at [ChatUI documentation](https://docs.cloud.sdu.dk/Apps/chat-ui.html)
   * A Huggingface API key. Follow this guide to setup a [user access token](https://huggingface.co/docs/hub/security-tokens)
 * You need the full contents of the *data* and *output* folder at hand. These are attached to the thesis hand-in and must be dropped in place in the corresponding location of this repository.
 * *Optional* - To re-run the Ragas testset generation, you need an [OpenAI API key](https://platform.openai.com/docs/api-reference/introduction). Note that nearly all of the API calls are stored in the Ragas cache shared with you in the data folder.
@@ -126,22 +124,26 @@ Select the correct installer for your environment from the examples below:
 ## 🤖 Usage
 The chatbot developed here can be used to interact with the entire Cognitive Science syllabus at Aarhus university. It was created to be more trustworthy than other bots by grounding its knowledge with a RAG database, supplying the user with uncertainty estimation scores, and providing the exact sources retrieved from the syllabus based on the users query. These steps provide more transparency during chatbot interactions and supports development of AI literacy among students.
 
-![Chatbot Startpage Screen Shot][startup-screenshot]
+https://github.com/user-attachments/assets/f3170d7b-e5e1-424e-b383-2fbff2555962
 
 
-![Chatbot Response Screen Shot][response-screenshot]
+__Note__ that the video was cut to remove thinking, the true speed of the chatbot response depends on the computational power available, but expect a higher latency regardless. 
 
 ### 🚀 Quick Start
 After following the installation guide, you can follow these steps to see the chatbot in action first!
 
 1. Drop-in the *data* and *output* folders
-2. Launch ChatUI or setup Huggingface
-3. Launch the chatbot interface:
+   * Run a terminal command to make sure that you have read/write acess to the ChromaDB database
+  ```bash
+   chmod -R u+rw data/chroma_db
+   ```
+3. Launch ChatUI or setup Huggingface
+4. Launch the chatbot interface:
   ```python
    streamlit run src/rag_chatbot/streamlit_app.py
    ```
 4. Input you provider API key in the Provider settings and start chatting!
-   * __Note:__ For the ChatUI link it must be formatted like this: https://app-[NAME-YOU-CHOSE].cloud.aau.dk/api/generate, otherwise the request fails
+   * __Note:__ For the ChatUI link either paste the exact name you chose, or the link that can be copied directly from the ChatUI launcher page.
 
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
@@ -186,18 +188,25 @@ This will fill out all the neccessary settings automatically.
 </details>
 
 ## 📝 Project Overview
-For a greater overview of the Python code, including a full reproduction guide, see the [src/README.md](https://github.com/SarahHvidAndersen/Thesis-Trustworthy-RAG/blob/main/src/README.md)
-The repository is structured as such (with the 'real' data and output folders):
+The full RAG pipeline can be seen here:
+<!-- ![my_rag_pipeline_figure](https://github.com/user-attachments/assets/03d4cfb8-acc9-49d9-bb3c-618410814eab) -->
+
+<img src="https://github.com/user-attachments/assets/03d4cfb8-acc9-49d9-bb3c-618410814eab" width=60% height=60%>
+
+<!-- ![rag-pipeline][rag-pipeline] -->
+
+For a greater overview of the Python code of each module, including a full reproduction guide, see the [src/README.md](https://github.com/SarahHvidAndersen/Thesis-Trustworthy-RAG/blob/main/src/README.md).
+The repository is structured as such:
 
 | Folder / File                          | Description                                                                                |
 |--------------------------------------|------------------------------------------------------------------------------------------------------------|
 | `data/`                              | Raw & processed syllabus data, chroma db and bm25 index, document splits and fitted scalers                                                      |
 | `images/`                           | Images for display purpose in Readme                                        | 
-| `output/`                           | Experiment outputs, data related to test data generation (knowledge graphs, answered test data), quantitative metrics and survey results                                          | 
-| `src/`                              | All scripts, the internal package, the rag_chatbot launcher and a scripts folder (one-time scripts for test data generation)                                   | 
+| `output/`                           | Experiment outputs, data related to test data generation (knowledge graphs, answered test data), quantitative metrics and survey results            | 
+| `src/`                              | All scripts, the internal package, the rag_chatbot launcher and a scripts folder (one-time scripts for test data generation)     | 
 | `src/internal`                      | Main Python package: pipeline core, retrievers, providers, UQ modules, database setup, metrics, scraping                                    | 
 | `streamlit_app.py`                   | Streamlit UI that launches the interactive chatbot demo                                                   | 
-| `config.yaml`                        | Central settings (retriever parameters, model IDs, model parameters, UE parameters, scaler paths) loaded at runtime                                      |
+| `config.yaml`                        | Central settings (retriever parameters, model IDs, model parameters, UE parameters, scaler paths) loaded at runtime                  |
 | `pyproject.toml`                     | Project metadata & dependency list for **uv venv / uv sync**                                    | 
 | `uv.lock`                           | Dependency versions for uv                                                   |
 
@@ -233,5 +242,6 @@ The uncertainty estimation methods code were derived from the [lm-polygraph repo
 [linkedin-url]: https://linkedin.com/in/sarah-hvid-andersen-145747200
 
 [bot-banner]: images/bot_banner.png
+[rag-pipeline]: images/my_rag_pipeline_figure.png
 [startup-screenshot]: images/start_page.png
 [response-screenshot]: images/uncertain_response.png
