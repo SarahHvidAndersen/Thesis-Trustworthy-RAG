@@ -26,12 +26,12 @@ model:
         - name: "Llama-3-8B"
           id:   "llama3:8b"
     hf:
-      default: "Llama-3-8B"
+      default: "Llama-3.1-8B"
       options:
-        - name: "Llama-3-8B"
-          id:   "https://api-inference.huggingface.co/models/meta-llama/Meta-Llama-3-8B-Instruct"
+        - name: "Llama-3.1-8B"
+          id:   "meta-llama/Llama-3.1-8B-Instruct"
         - name: "Llama-3-70B"
-          id:   "https://api-inference.huggingface.co/models/meta-llama/Meta-Llama-3-70B-Instruct"
+          id:   "meta-llama/Meta-Llama-3-70B-Instruct"
 
 generation:
   n_samples: 5       # number of samples to draw; 0 triggers dummy/demo

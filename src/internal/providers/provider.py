@@ -1,5 +1,8 @@
 import os
 import requests
+from typing import Any, List, Dict
+import json
+from huggingface_hub import InferenceClient, model_info
 from dotenv import load_dotenv
 load_dotenv(override=True)
 
@@ -10,7 +13,7 @@ def build_context_and_hist(retrieved_docs: list[dict], history: list[dict] | Non
     without any system or example prompts.
     """
     # chat history
-    hist_block = ""
+    hist_block = "HISTORY:"
     if history:
         for turn in history[-4:]:
             hist_block += f"User: {turn['user']}\nAssistant: {turn['assistant']}\n"
@@ -47,11 +50,11 @@ class GeneratorProvider:
         system_prompt = (
             "SYSTEM: You are a knowledgeable cognitive science tutor with information "
             "about the entire Cognitive Science syllabus at Aarhus University.\n"
-            "Always provide concise, factual answers using the supplied CONTEXT if any was provided.\n"
+            "Always provide concise, factual answers to the users QUESTION using the supplied CONTEXT if any was provided.\n"
             "If information from a specific course is requested (e.g. Human Computer "
             "Interaction), only use CONTEXT where the metadata matches that course. "
-            "If the answer for an educational question is not contained in CONTEXT, respond: \"I'm not sure about that, sorry!\""
-            "For normal questions like: \"hi! who are you?\", respond as a friendly cognitive science tutor and ignore any provided irrelevant context.  \n\n"
+            "If the answer for a question is not contained in CONTEXT or none was supplied, add that information and ALLWAYS try your best to answer anyway: \"The CONTEXT did not include specific information but...\""
+            "For normal questions like: \"hi! who are you?\", respond as a friendly tutor and ignore any irrelevant context.  \n\n"
         )
 
         # One-shot example
@@ -62,11 +65,11 @@ class GeneratorProvider:
             "involved in high-order executive functions like planning and decision making.”\n\n"
             "QUESTION: What does the PFC do?\n"
             "ANSWER: It supports executive functions such as planning and decision making. [1]\n"
-            "-\n\n"
+            "-----\n\n"
         )
 
         # add chat history, if any
-        hist_block = ""
+        hist_block = "HISTORY:"
         if history:
             for turn in history[-4:]:
                 hist_block += f"User: {turn['user']}\nAssistant: {turn['assistant']}\n"
@@ -155,55 +158,86 @@ class HuggingFaceProvider(GeneratorProvider):
     Provider that uses the Hugging Face Inference API.
     Generation parameters (temperature, top_p, max_new_tokens) are passed during initialization.
     """
-    def __init__(self, api_url: str, headers: dict, temperature: float = 0.9,
+    def __init__(self, model:str, api_url: str, provider: str | None = None, 
+                 #headers: dict, 
+                 temperature: float = 0.9,
                  top_p: float = 0.9, max_new_tokens: int = 150):
-        self.api_url = api_url
-        self.headers = headers
+        self.model = model
         self.temperature = temperature
         self.top_p = top_p
         self.max_new_tokens = max_new_tokens
 
-        print(f"[HuggingFaceProvider] Initialized with API URL: {self.api_url}")
+        # `InferenceClient` handles routing + auth
+        self.client = InferenceClient(
+            model=model,
+            provider=provider,     # e.g. "together", "hf-inference", "novita", or None/"auto"
+            api_key=api_url,
+            headers={"X-use-cache": "false"}
+            #timeout=timeout,
+        )
+
+        #print(f"[HuggingFaceProvider] Initialized with API URL: {self.api_url}")
         print(f"[HuggingFaceProvider] Generation settings: temperature={self.temperature}, "
               f"top_p={self.top_p}, max_new_tokens={self.max_new_tokens}")
-        print(f"[HuggingFaceProvider] Using headers: {self.headers}")
-
-    def _call_api(self, payload: dict) -> str:
-        print(f"[HuggingFaceProvider] Sending request with payload:\n{payload}\n")
-        response = requests.post(self.api_url, headers=self.headers, json=payload)
-        if response.status_code != 200:
-            raise Exception(f"API request failed: {response.status_code}, {response.text}")
-        data = response.json()[0]
-        return data.get("generated_text", "").strip()
+        #print(f"[HuggingFaceProvider] Using headers: {self.headers}")
     
+    @staticmethod
+    def _wrap(prompt: str) -> List[Dict[str, str]]:
+        """Turn a plain prompt into the new style messages array."""
+        return [{"role": "user", "content": prompt}]
+    
+    @staticmethod
+    def _split_prompt(full: str) -> tuple[str | None, str]:
+        """
+        Split `full` at the first 'EXAMPLE:' marker.
+        Returns (system_part_or_None, user_part).
+        """
+        marker = "-----" #-----
+        idx = full.find(marker)
+        if idx == -1:                       # fallback – nothing to split
+            return None, full
+        system = full[:idx].strip()
+        user   = full[idx:].lstrip()
+        return system, user
+    
+    def _as_messages(self,
+                 user_prompt: str,
+                 system_prompt: str | None = None) -> list[dict[str, str]]:
+        if system_prompt:
+            return [
+                {"role": "system", "content": system_prompt},
+                {"role": "user",   "content": user_prompt},
+            ]
+        return [{"role": "user", "content": user_prompt}]
+    
+    def _chat(self, messages: List[Dict[str, str]]) -> str:
+        """Run `chat_completion` and return the assistant’s text only."""
+        debug_payload = {
+            "model":       self.model,
+            "messages":    messages,
+            "temperature": self.temperature,
+            "top_p":       self.top_p,
+            "max_tokens":  self.max_new_tokens,
+        }
+        print("[HF] Payload:\n" + json.dumps(debug_payload, indent=2))
+        
+        resp = self.client.chat_completion(
+            messages,
+            temperature=self.temperature,
+            top_p=self.top_p,
+            max_tokens=self.max_new_tokens,
+        )
+        # `resp` is a ChatCompletion object (attr & item access both work)
+        return resp.choices[0].message.content.strip()
+
     def generate_raw(self, full_prompt: str) -> str:
-        """
-        Send `full_prompt` verbatim to the LLM, bypassing build_prompt().
-        """
-        payload = {
-            "inputs": full_prompt,
-            "parameters": {
-                "do_sample": True,
-                "temperature": self.temperature,
-                "top_p": self.top_p,
-                "max_new_tokens": self.max_new_tokens
-            }
-        }
-        return self._call_api(payload)
-
-
-    def generate(self, query: str, context: any, history=None) -> str:
+        """Send `full_prompt` exactly as given."""
+        return self._chat(self._as_messages(full_prompt))
+    
+    def generate(self, query: str, context: Any, history=None) -> str:
         prompt = GeneratorProvider.build_prompt(query, context, history)
-        payload = {
-            "inputs": prompt,
-            "parameters": {
-                "do_sample": True,
-                "temperature": self.temperature,
-                "top_p": self.top_p,
-                "max_new_tokens": self.max_new_tokens
-            }
-        }
-        return self._call_api(payload)
+        system_part, user_part = self._split_prompt(prompt)
+        return self._chat(self._as_messages(user_part, system_part))
     
 
 class ChatUIProvider(GeneratorProvider):

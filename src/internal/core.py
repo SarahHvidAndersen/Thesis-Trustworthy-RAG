@@ -148,8 +148,9 @@ def init_provider(model_type: str, model_id: str, api_key: str, cfg: dict):
         from internal.providers.provider import HuggingFaceProvider # fix cache
 
         return HuggingFaceProvider(
-            api_url=model_id,
-            headers={"Authorization": f"Bearer {api_key}"},
+            model=model_id,
+            api_url=api_key,
+            #headers={"Authorization": f"Bearer {api_key}"},
             temperature=gen_cfg["temperature"],
             top_p=gen_cfg["top_p"],
             max_new_tokens=gen_cfg["max_new_tokens"],
@@ -303,7 +304,7 @@ def rag_pipeline(
         #print(f"SELECTION MODEL, SELECTION_PROMPT IS {selection_prompt}")
 
         selection = provider.generate_raw(selection_prompt)
-        #print(F"SELECTION MODEL OUTPUT IS: " + selection)
+        print(F"SELECTION MODEL OUTPUT IS: " + selection)
     
         # parse the reply with regex
         try:

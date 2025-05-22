@@ -1,5 +1,6 @@
 import requests
 import os
+from huggingface_hub import InferenceClient,  model_info
 from dotenv import load_dotenv
 load_dotenv()
 HF_API_KEY = os.getenv("HF_API_KEY")
@@ -56,23 +57,23 @@ def generate_answer(query: str, context: str, api_url: str, headers: dict = None
 
 if __name__ == "__main__":
 
-    # Test the generate_answer function independently.
-    
-    # Sample query and context
-    test_query = "Tell me a short story. you decide what its about."
-    test_context = (
-        ""
+    messages = [
+        {
+            "role": "user",
+            "content": "What is the capital of France?",
+        }
+    ]
+    client = InferenceClient(
+        #provider="together",
+        model="meta-llama/Meta-Llama-3-70B-Instruct",
+        api_key=HF_API_KEY,
+        #headers=
     )
-    
-    # Use the Hugging Face inference endpoint for a generative model
-    api_url = "https://api-inference.huggingface.co/models/meta-llama/Meta-Llama-3-8B-Instruct"
-    
-    # include API token in the headers for authorization
-    headers = {"Authorization": f"Bearer {HF_API_KEY}", "X-use-cache": "false"}
-    
-    try:
-        answer = generate_answer(test_query, test_context, api_url, headers=headers)
-        print("Generated answer:")
-        print(answer)
-    except Exception as e:
-        print(f"Error generating answer: {e}")
+
+    #info = model_info("meta-llama/Llama-3.1-8B-Instruct", expand="inferenceProviderMapping")
+    #print(info.inference)
+    #print(info.inference_provider_mapping)
+
+    completion = client.chat_completion(messages, temperature=0.9, top_p=0.9, max_tokens=100)
+
+    print(completion)

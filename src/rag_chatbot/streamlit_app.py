@@ -79,12 +79,11 @@ provider = prov_expander.selectbox(
 
 # set API Key / URL, add here
 CHATUI_HELP = """
-Paste **either** the link name you chose **or** the host link.
-Find it under Links on the ChatUI launcher page.
-
-Example:
-    Name you chose: cool-bot
-    What to paste:  cool-bot **or** app-cool-bot.cloud.aau.dk
+Paste **either** the link name you chose **or** the host link.  \n
+Find it under Links on the ChatUI launcher page.  \n
+Example:  \n
+    Name you chose: cool-bot  \n
+    What to paste:  cool-bot or app-cool-bot.cloud.aau.dk
 """
 if provider == "chatui":
     raw_input = prov_expander.text_input(
