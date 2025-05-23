@@ -15,6 +15,7 @@ output/quantitative_metrics/*
 output/raw_test_data/*
 output/streamlit_run/*
 output/survey_results/*
+output/client_run/*
 
 !.gitkeep
 !.gitignore
