@@ -1,51 +1,59 @@
 # config.yaml
-retrieval:
-  method: hybrid
-  semantic_weight: 0.5
-  top_k: 100
-  semantic_k: 50  # not actually used, just shows default value
-  lexical_k: 50 # not actually used, just shows default value
-  min_docs: 0
-  max_docs: 10
-  threshold: 0.3 # conservative thres
 
-
+# Default settings, backward compatibility
 model:
-  # default settings, backward compatibility
-  type: "chatui"    # or "hf"
-  hf_model: "https://api-inference.huggingface.co/models/meta-llama/Meta-Llama-3-8B-Instruct"
-  chatui_model: "llama3:8b" #llama3.2:1b" or "llama3:8b"
+  type: "ChatUI"    # or "hf"
+  #hf_model: "https://api-inference.huggingface.co/models/meta-llama/Meta-Llama-3-8B-Instruct" # old version, deprecated by hf
+  chatui_model: "llama3:8b"
 
-  # All available models, grouped by provider
+  # Provider model settings
   providers:
-    chatui:
+    ChatUI:
       default: "Llama-3-8B"
       options:
         - name: "Llama-3.2-1B"
           id:   "llama3.2:1b"
         - name: "Llama-3-8B"
           id:   "llama3:8b"
-    hf:
+    
+    Ollama:
+      default: "Llama-3.1-8B"
+      options:
+        - name: "Llama-3.1-8B"
+          id:   "llama3.1:8b"
+
+    Huggingface:
       default: "Llama-3.1-8B"
       options:
         - name: "Llama-3.1-8B"
           id:   "meta-llama/Llama-3.1-8B-Instruct"
-        - name: "Llama-3-70B"
-          id:   "meta-llama/Meta-Llama-3-70B-Instruct"
 
+# Retriever - parameters
+retrieval:
+  method: hybrid
+  semantic_weight: 0.5
+  top_k: 100
+  semantic_k: 50  
+  lexical_k: 50 
+  min_docs: 0
+  max_docs: 10
+  threshold: 0.3
+
+
+# Model generation - parameters
 generation:
-  n_samples: 5       # number of samples to draw; 0 triggers dummy/demo
-  temperature: 0.9   # sampling temperature
-  top_p: 0.95        # nucleus sampling
+  n_samples: 5       # 0 triggers dummy/demo
+  temperature: 0.9   
+  top_p: 0.95
   max_new_tokens: 300
 
-# raw score -> higher is more uncertain
-uncertainty: 
 
+# Uncertainty estimation - parameters
+uncertainty: 
   method: "deg_mat" # default
 
   scaling:
-    type: "quantile"               # or "isotonic"
+    type: "quantile"
     
     # for each UE method, point to the fitted‐scaler on disk
     paths:
@@ -64,5 +72,5 @@ uncertainty:
     similarity_score: "NLI_score"
     affinity: "entail"
     verbose: True
-    thres: 0.7 # paper default of 0.9, doesn't work with only 5 samples. should ideally be calibrated carefully
+    thres: 0.7 # paper default of 0.9, doesn't work with only 5 samples
 

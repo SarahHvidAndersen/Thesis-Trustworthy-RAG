@@ -179,7 +179,6 @@ class HuggingFaceProvider(GeneratorProvider):
         #print(f"[HuggingFaceProvider] Initialized with API URL: {self.api_url}")
         print(f"[HuggingFaceProvider] Generation settings: temperature={self.temperature}, "
               f"top_p={self.top_p}, max_new_tokens={self.max_new_tokens}")
-        #print(f"[HuggingFaceProvider] Using headers: {self.headers}")
     
     @staticmethod
     def _wrap(prompt: str) -> List[Dict[str, str]]:
@@ -189,10 +188,10 @@ class HuggingFaceProvider(GeneratorProvider):
     @staticmethod
     def _split_prompt(full: str) -> tuple[str | None, str]:
         """
-        Split `full` at the first 'EXAMPLE:' marker.
+        Split `full` at the '-----' marker.
         Returns (system_part_or_None, user_part).
         """
-        marker = "-----" #-----
+        marker = "-----" # split after example
         idx = full.find(marker)
         if idx == -1:                       # fallback – nothing to split
             return None, full
@@ -240,7 +239,7 @@ class HuggingFaceProvider(GeneratorProvider):
         return self._chat(self._as_messages(user_part, system_part))
     
 
-class ChatUIProvider(GeneratorProvider):
+class OllamaProvider(GeneratorProvider):
     """
     Provider that uses the ChatUI API.
     Accepts generation parameters including model_id, temperature, top_p, max_new_tokens, and optionally seed.
@@ -253,16 +252,20 @@ class ChatUIProvider(GeneratorProvider):
         self.top_p = top_p
         self.max_new_tokens = max_new_tokens
         self.seed = seed
-        print(f"[ChatUIProvider] Initialized with API URL: {self.api_url}")
-        print(f"[ChatUIProvider] Model ID: {self.model_id}")
-        print(f"[ChatUIProvider] Generation settings: temperature={self.temperature}, top_p={self.top_p}, "
+
+        print(f"[OllamaProvider] Initialized with API URL: {self.api_url} and Model ID: {self.model_id}")
+        print(f"[OllamaProvider] Generation settings: temperature={self.temperature}, top_p={self.top_p}, "
               f"max_new_tokens={self.max_new_tokens}, seed={self.seed}")
 
     def _call_api(self, payload: dict) -> str:
-        print(f"[ChatUIProvider generate_raw] Sending request with payload:\n{payload}\n")
-        response = requests.post(self.api_url, json=payload)
+        print(f"[OllamaProvider] Sending request with payload:\n{payload}\n")
+        #print(f"[OllamaProvider] Sending request.")
+        response = requests.post(self.api_url, json=payload, verify=False)
         if response.status_code != 200:
             raise Exception(f"API request failed: {response.status_code}, {response.text}")
+        
+        print("[OllamaProvider] Received response:")
+        print(response.json().get("response", "").strip())
         return response.json().get("response", "").strip()
     
     def generate_raw(self, full_prompt: str) -> str:
@@ -298,7 +301,7 @@ class ChatUIProvider(GeneratorProvider):
 if __name__ == "__main__":
     from dotenv import load_dotenv
     import os
-    from internal.providers.provider import ChatUIProvider, GeneratorProvider
+    from internal.providers.provider import OllamaProvider, GeneratorProvider
 
     load_dotenv()
     print("Running provider.py demo…\n")
@@ -355,10 +358,10 @@ if __name__ == "__main__":
     print(sel_prompt)
     print("\n" + "="*80 + "\n")
 
-    #  send selection prompt through ChatUIProvider 
+    #  send selection prompt through OllamaProvider 
     chatui_api = os.getenv("CHATUI_API_URL", "")
     if chatui_api:
-        chatui = ChatUIProvider(
+        chatui = OllamaProvider(
             api_url=chatui_api,
             model_id="llama3:8b", #llama3.2:1b
             temperature=0.9,
@@ -366,7 +369,7 @@ if __name__ == "__main__":
             max_new_tokens=50,
             seed=None
         )
-        print("=== ChatUIProvider.generate(selection) ===")
+        print("=== Ollama.generate(selection) ===")
         response = chatui.generate(sel_prompt, retrieved_docs, history)
         print(response)
     else:

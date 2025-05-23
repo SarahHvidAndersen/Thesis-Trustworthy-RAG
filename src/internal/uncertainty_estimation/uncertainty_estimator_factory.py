@@ -1,5 +1,7 @@
 
 from functools import lru_cache
+from transformers import logging as hf_logging
+hf_logging.set_verbosity_error()
 
 @lru_cache(maxsize=1)
 def _cached_deberta(model_name: str, batch_size: int, device: str):

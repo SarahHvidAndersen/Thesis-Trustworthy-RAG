@@ -28,7 +28,8 @@ def log_experiment(csv_filename: str, data: dict):
     with open(csv_filename, mode='a', newline='', encoding='utf-8') as f:
         writer = csv.DictWriter(f, fieldnames=CSV_FIELDS)
         writer.writerow(data)
-    print(f"[CSV Logger] Logged experiment data: {data}")
+    #print(f"[CSV Logger] Logged experiment data: {data}")
+    print(f"[CSV Logger] Logged experiment data.")
 
 
 if __name__ == "__main__":

@@ -9,6 +9,8 @@ from transformers import (
     AutoModelForSequenceClassification,
 )
 
+from transformers import logging as hf_logging
+hf_logging.set_verbosity_error() 
 
 class Deberta:
     """

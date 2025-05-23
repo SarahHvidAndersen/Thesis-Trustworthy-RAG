@@ -1,92 +1,140 @@
-import os
+#!/usr/bin/env python
+"""
+Minimal CLI for running the RAG pipeline.
+
+Examples
+--------
+$ python run_cli.py --provider ollama --query "Explain what the neocortex is?" --no-save-env
+$ python run_cli.py -p chatui                       # interactive query prompt
+"""
+from __future__ import annotations
+
+import argparse
 import json
-from internal.logging_utils.csv_logger import initialize_csv, log_experiment
+import os
+import sys
+from pathlib import Path
+
 from internal.core import run_rag, get_config
+from internal.logging_utils.csv_logger import initialize_csv, log_experiment
+from internal.providers.provider_utils import ensure_provider_input
 
-def main():
-    # Load configuration
+# add user input arguments
+def parse_args() -> argparse.Namespace:
     cfg = get_config()
-    model_cfg = cfg['model']
-    gen_cfg = cfg['generation']
-    retr_cfg = cfg.get('retrieval', {})
+    default_provider = cfg["model"]["type"]
 
-    # Extract settings for clarity
-    model_type   = model_cfg.get('type')
-    top_k = retr_cfg.get('top_k')
-    n_samples = gen_cfg.get('n_samples')
-    temperature  = gen_cfg.get('temperature')
-    top_p = gen_cfg.get('top_p')
-    uq_method = cfg['uncertainty']['method']
+    parser = argparse.ArgumentParser(description="Run Retrieval-Augmented Generation from the CLI")
+    parser.add_argument(
+        "-p", "--provider",
+        choices=("chatui", "ollama", "hf", "huggingface"),
+        default=default_provider,
+        help=f"Which backend to use (default: {default_provider})"
+    )
+    parser.add_argument(
+        "-q", "--query",
+        help="Prompt to send to the model. If omitted, you will be asked for it."
+    )
+    parser.add_argument(
+        "--save-env",
+        dest="save_env",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help="Persist any entered URLs / API keys to .env (default: true)"
+    )
+    return parser.parse_args()
 
-    # Define your test query here
-    query = "What are embeddings in natural language processing? answer in one sentence."
 
-    # Print all inputs for debugging
-    print("\n--- Running RAG CLI Debug ---")
-    print(f"Query: {query}")
-    print(f"Model Type: {model_type}")
-    print(f"Top-K docs: {top_k}, N-samples: {n_samples}")
-    print(f"Temperature: {temperature}, Top-p: {top_p}")
-    print(f"Uncertainty Method: {uq_method}\n")
+def get_query(arg_value: str | None) -> str:
+    if arg_value:
+        return arg_value
+    # interactive fallback
+    try:
+        return input("Enter your query: ").strip()
+    except (EOFError, KeyboardInterrupt):
+        sys.exit("\nAborted.")
 
-    # Run the pipeline
-    print("Running run_rag()...")
+
+def persist_path() -> Path:
+    out_dir = Path("output/client_run")
+    out_dir.mkdir(parents=True, exist_ok=True)
+    return out_dir / "experiment_results.csv"
+
+
+# main entry-point
+def main() -> None:
+    args = parse_args()
+    cfg = get_config()
+    provider = args.provider.replace("huggingface", "hf")
+    query = get_query(args.query)
+
+    # get (or prompt for) the URL / API-key
+    api_cred = ensure_provider_input(
+        provider,
+        persist=args.save_env
+    )
+
+    print("\n--- RAG CLI -------------------------------------------")
+    print(f"provider : {provider}")
+    print(f"persist to .env: {'yes' if args.save_env else 'no'}")
+    print(f"query : {query}\n")
+
+    # run the pipeline
     result = run_rag(
         query=query,
         cfg=cfg,
-        top_k_override=top_k,
-        n_samples_override=n_samples,
-        uq_method_override=uq_method
+        provider_name_override=provider,
+        api_key_override=api_cred,
     )
 
-    # Check for empty result
     if result is None:
-        print("Pipeline returned no result (e.g., empty document collection). Exiting.")
+        print("No result returned (e.g. empty document collection).")
         return
 
-    # Unpack the result
-    final_answer = result.get("final_answer")
-    uncertainty = result.get("uncertainty")
-    retrieved_docs = result.get("retrieved_docs")
-    samples = result.get("samples")
+    print("\n--- RETRIEVED DOCS (top-k) ----------------------------")
+    for d in result["retrieved_docs"]:
+        snippet = d["text"][:100].replace("\n", " ")
+        print(f"[{d['source']}] {d['id']}  score={d['rerank_score']:.3f}  →  {snippet}…")
 
-    # Print raw outputs for inspection
-    print("\n--- RAW SAMPLES ---")
-    for idx, s in enumerate(samples, start=1):
-        print(f"Sample {idx}: {s}")
+    if result["raw_uncertainty"] is not None:
+        print(f"\nuncertainty (raw)  : {result['raw_uncertainty']:.4f}")
+        print(f"confidence (scaled): {result['calibrated_confidence']:.4f}")
+    
+    # pretty print
+    print("\n--- FINAL ANSWER --------------------------------------")
+    print(result["final_answer"])
 
-    print(F"\n--- Retrieved Documents --- length: {len(retrieved_docs)}")
-    for doc in retrieved_docs:
-        print(f"ID: {doc.get('id')}, Rerank: {doc.get('rerank_score')}, Source: {doc.get('source')}")
-        print(f" Text snippet: {doc.get('text')[:100].replace('\n',' ')}...")
+    # log
+    gen_cfg = cfg['generation']
+    retr_cfg = cfg.get('retrieval', {})
+    model_type = provider
 
-    print("\n--- Uncertainty Score ---")
-    print(uncertainty)
+    n_samples = gen_cfg['n_samples']
+    temperature = gen_cfg['temperature']
+    top_p = gen_cfg['top_p']
+    uq_method = cfg["uncertainty"]["method"]
 
-    print("\n--- Final Answer ---")
-    print(final_answer)
+    csv_path = persist_path()
+    initialize_csv(csv_path)
+    log_experiment(csv_path, {
+                "query": query,
+                "answer": result['final_answer'],
+                "samples": json.dumps(result["samples"], ensure_ascii=False),
+                "model": model_type,
+                "settings": json.dumps({
+                    "temperature": temperature,
+                    "top_p": top_p,
+                    "max_new_tokens": gen_cfg["max_new_tokens"],
+                    "top_k": retr_cfg["top_k"],
+                    "n_samples": n_samples
+                }),
+                "uncertainty_method": uq_method,
+                "raw_uncertainty": result["raw_uncertainty"],
+                "calibrated_confidence": result["calibrated_confidence"],
+                "retrieved_documents": result["retrieved_docs"],
+            })
+    print(f"\nExperiment logged to {csv_path}")
 
-    # Persist experiment data
-    CSV_FILE = "output/client_run/experiment_results.csv"
-    initialize_csv(CSV_FILE)
-    experiment_data = {
-        "query": query,
-        "answer": final_answer,
-        "samples": json.dumps(samples, ensure_ascii=False),
-        "model": model_type,
-        "settings": json.dumps({
-            "temperature": temperature,
-            "top_p": top_p,
-            "max_new_tokens": gen_cfg.get("max_new_tokens"),
-            "top_k": top_k,
-            "n_samples": n_samples,
-        }),
-        "uncertainty_method": uq_method,
-        "uncertainty_score": uncertainty,
-        "retrieved_documents": retrieved_docs,
-    }
-    log_experiment(CSV_FILE, experiment_data)
-    print(f"\nExperiment logged to {CSV_FILE}")
 
 if __name__ == "__main__":
     main()

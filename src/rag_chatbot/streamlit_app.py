@@ -4,12 +4,13 @@ import logging
 logging.getLogger("streamlit.watcher.local_sources_watcher").setLevel(logging.ERROR)
 
 import streamlit as st
-from ui_helpers import render_chat_history, format_chatui_url
+from ui_helpers import render_chat_history
 from internal.core import run_rag, get_config
 from internal.logging_utils.csv_logger import initialize_csv, log_experiment
 import json, os
 import copy
 from internal.retrievers.semantic_retriever import load_embedding_model as _load
+from internal.providers.provider_utils import format_url
 
 #streamlit cache add-on
 @st.cache_resource
@@ -44,7 +45,7 @@ model_cfg = cfg['model']
 gen_cfg = cfg['generation']
 retr_cfg = cfg.get('retrieval', {})
 # Reset chat history
-if st.sidebar.button("🔄 Reset chat "):
+if st.sidebar.button("🔄 Reset Chat "):
     st.session_state["history"] = []
 
 
@@ -73,8 +74,8 @@ prov_expander = st.sidebar.expander("🔧 Provider Settings", expanded=True)
 # Choose provider
 provider = prov_expander.selectbox(
     "LLM Provider",
-    ["chatui", "hf"],
-    index=["chatui", "hf"].index(model_cfg.get('type', 'chatui'))
+    ["ChatUI", "Ollama", "Huggingface"],
+    index=["ChatUI", "Ollama", "Huggingface"].index(model_cfg.get('type', 'ChatUI'))
 )
 
 # set API Key / URL, add here
@@ -85,7 +86,16 @@ Example:  \n
     Name you chose: cool-bot  \n
     What to paste:  cool-bot or app-cool-bot.cloud.aau.dk
 """
-if provider == "chatui":
+
+OLLAMA_HELP = """
+Paste **either** the localhost port you chose **or** the host link.  \n
+\n
+Example:  \n
+    Port number you chose: 80  \n
+    What to paste:  localhost:80 or http://localhost:80
+"""
+
+if provider == "ChatUI":
     raw_input = prov_expander.text_input(
         "ChatUI API",
         value=os.getenv("CHATUI_API_URL", model_cfg.get("chatui_api_url", "")),
@@ -93,7 +103,17 @@ if provider == "chatui":
         help=CHATUI_HELP)
 
     # Build the real URL
-    api_key = format_chatui_url(raw_input)
+    api_key = format_url(raw_input)
+
+elif provider == "Ollama":
+    raw_input = prov_expander.text_input(
+        "Ollama Link",
+        value=os.getenv("OLLAMA_HOST", model_cfg.get("Ollama_link", "")),
+        type="password", placeholder="localhost:[PORT-YOU-CHOSE]",
+        help=OLLAMA_HELP)
+
+    # Build the real URL
+    api_key = format_url(raw_input)
 
 else:
     api_key = prov_expander.text_input(
@@ -110,7 +130,7 @@ default = prov.get('default', names[0] if names else '')
 default_idx = names.index(default) if default in names else 0
 selected_name = prov_expander.selectbox("Model", names, index=default_idx)
 model_id = options[names.index(selected_name)]['id'] if options else ''
-model_type = provider
+provider_name = provider
 
 
 # Advanced Settings (collapsed by default)
@@ -165,7 +185,7 @@ if query:
                 "retrieved_docs": [],
                 "raw_uncertainty": 0.5,
                 "calibrated_confidence": 0.5,
-                "top_k": 100,
+                "top_k": 0,
                 "n_samples": 0
             }
         else:
@@ -185,7 +205,7 @@ if query:
                 #top_k_override=top_k,
                 n_samples_override=n_samples,
                 uq_method_override=uq_method,
-                model_type_override=model_type,
+                provider_name_override=provider_name,
                 model_id_override=model_id,
                 api_key_override=api_key,
             )
@@ -206,7 +226,7 @@ if query:
                 "query": query,
                 "answer": result['final_answer'],
                 "samples": json.dumps(result["samples"], ensure_ascii=False),
-                "model": model_type,
+                "model": provider_name,
                 "settings": json.dumps({
                     "temperature": temperature,
                     "top_p": top_p,

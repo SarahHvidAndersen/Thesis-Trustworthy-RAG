@@ -6,51 +6,6 @@ from collections import defaultdict
 from typing import List, Dict
 from html import escape
 
-from urllib.parse import urlparse, urlunparse
-
-DEFAULT_DOMAIN_SUFFIX = ".cloud.aau.dk"
-DEFAULT_PREFIX = "app-"
-REQUIRED_PATH = "/api/generate"
-
-def format_chatui_url(raw: str) -> str:
-    """
-    Normalise *anything* the user might type into the correct ChatUI endpoint:
-
-        cool-bot                        → https://app-cool-bot.cloud.aau.dk/api/generate
-        app-cool-bot.cloud.aau.dk       → https://app-cool-bot.cloud.aau.dk/api/generate
-        https://app-cool-bot.cloud.aau.dk → https://app-cool-bot.cloud.aau.dk/api/generate
-        https://app-cool-bot.cloud.aau.dk/api/generate → unchanged
-    """
-    if not raw:
-        return ""
-
-    raw = raw.strip()
-
-    # If it *already* looks like a URL, parse it
-    if raw.startswith(("http://", "https://")):
-        parts = urlparse(raw)
-        scheme = "https"                        # force HTTPS
-        netloc = parts.netloc or ""             # host + optional port
-        path   = parts.path or ""
-    else:
-        # Not a full URL: decide if it's a bare name or a host 
-        if "." in raw:
-            # e.g. app-cool-bot.cloud.aau.dk
-            netloc = raw
-        else:
-            # e.g. cool-bot  → add prefix/suffix
-            netloc = f"{DEFAULT_PREFIX}{raw}{DEFAULT_DOMAIN_SUFFIX}"
-        scheme = "https"
-        path   = ""
-
-    # Guarantee the trailing /api/generate
-    if not path.rstrip("/").endswith(REQUIRED_PATH):
-        path = path.rstrip("/") + REQUIRED_PATH
-
-    # Compose the final, normalised URL 
-    return urlunparse((scheme, netloc.rstrip("/"), path, "", "", ""))
-
-
 
 def _inject_css() -> None:
     """Insert once‑per‑session CSS for chat bubbles and source dropdowns."""

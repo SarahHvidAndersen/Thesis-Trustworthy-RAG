@@ -115,8 +115,8 @@ def rag_pipeline(
 
 # doesn't work rn, update
 if __name__ == "__main__":
-    # Example usage: Using the chatuiprovider.
-    from providers.provider import HuggingFaceProvider, ChatUIProvider
+    # Example usage: Using the OllamaProvider.
+    from providers.provider import HuggingFaceProvider, OllamaProvider
     from dotenv import load_dotenv
     load_dotenv()
     
@@ -129,7 +129,7 @@ if __name__ == "__main__":
     # Initialize the provider.
     # test hf header (cache) later
     #provider = HuggingFaceProvider(api_url=HF_MODEL_URL, headers={"Authorization": f"Bearer {HF_API_KEY}"}, "X-use-cache": "false")
-    provider = ChatUIProvider(api_url=CHATUI_API_URL)
+    provider = OllamaProvider(api_url=CHATUI_API_URL)
 
     # -- Import and initialize the uncertainty estimator.
     from uncertainty_estimation.lexical_similarity import LexicalSimilarity
