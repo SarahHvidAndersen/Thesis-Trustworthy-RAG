@@ -16,8 +16,9 @@
 
 <!--
 # The Cognitive Science Chatbot, a *trustworthy* RAG demo 🤖🧠 -->
-This repository contains a prototype implementation of a Retrieval‑Augmented Generation (RAG) chatbot with uncertainty estimation and sources for each response. The codebase is structured as a proper Python package (internal) and a Streamlit front‑end app interface. 
-The product was developed and designed as part of my thesis at Cognitive Science, Aarhus University. 
+This repository contains a prototype implementation of a Retrieval‑Augmented Generation (RAG) chatbot with uncertainty estimation and visible sources for each response. The codebase is structured as a proper Python package (internal) and a Streamlit front‑end app interface.
+
+The product was developed and designed as part of my thesis at Cognitive Science, Aarhus University.
 
 <!-- TABLE OF CONTENTS -->
 <details open>
@@ -51,22 +52,21 @@ The product was developed and designed as part of my thesis at Cognitive Science
 
 <!-- ABOUT THE PROJECT -->
 ## 📚 About The Project
-The project here has a two-fold purpose. Firstly, it contains a quick-start way to run the Cognitive Science chatbot with all necessary pre and post-processing supplied in a separate file. Secondly, it contains all code to reproduce the steps taken as part of the Thesis project. Additionally, the repository is constructed in a modular way, to allow the same code to work with a different raw dataset, adding another uncertainty estimation method, a different retriever or more!
+The purpose of this project is to create a functioning prototype of a chatbot developed for use in higher education. It contains a quick-start way to run the Cognitive Science chatbot with all necessary pre and post-processing supplied in a separate file. Additionally, it contains all code to reproduce the steps taken as part of the Thesis project. Additionally, the repository is constructed in a modular way, to allow the code to work with a different raw dataset, adding another uncertainty estimation method, a different retriever or more!
 
 ### 🌟 Features
-- **Hybrid Retrieval (BM25 + dense)** with cross‑encoder re‑ranking  
-- **Uncertainty Quantification** (Lexical Similarity, Degree Matrix NLI, Eccentricity)
 - **Streamlit UI** with provider settings & parameter sliders 
 - **Confidence Calibration** → red / yellow / black chat bubbles
+- **Hybrid Retrieval (BM25 + dense)** with cross‑encoder re‑ranking  
+- **Uncertainty Quantification** (Lexical Similarity, Degree Matrix NLI, Eccentricity)
 - **LLM-based test-set generation** using the **Ragas** framework
-- **Fast dependency resolution** via **uv**  
-- Modular pipeline (data → embeddings → retriever → generator)
-
+- **Fast dependency resolution** via **uv**
+- **Three provider** options (ChatUI, Ollama, Huggingface)
 
 <!-- GETTING STARTED -->
 ## 🛠️ Getting Started
 
-To get a local copy of this product up and running follow the steps in this section first.
+To get a local copy of this product up and running follow the installation steps in this section first. Then, choose and setup your preferred provider. After that, simply follow the Quick start!
 
 ### 📣 Prerequisites
 
@@ -78,22 +78,26 @@ Select the correct installer for your environment from the examples below:
   brew install uv
   ```
   ```sh
-  # On macOS and Linux.
+  # or, this is UV's own recommendation nn macOS and Linux:
   curl -LsSf https://astral.sh/uv/install.sh | sh
   ```
   ```sh
-  # On Windows.
+  # On Windows:
   powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
   ```
   ```sh
-  # With pip.
+  # With pip:
   pip install uv
   ```
-* You need API provider access from UCloud __*or*__ Huggingface.
+* You need API provider access from UCloud __*or*__ local Ollama  __*or*__ Huggingface. It is recommended to use ChatUI as a student or local Ollama, as Huggingface free API will run out quickly and is susceptible to Gateway Time-out errors.
   * Setup a GPU powered ChatUI host on UCloud. Follow the included <a href="#-chatui-setup">ChatUI Setup</a> guide. See more at [ChatUI documentation](https://docs.cloud.sdu.dk/Apps/chat-ui.html)
+  * Setup a local Ollama server. Follow their installation guide [here](https://github.com/ollama/ollama?tab=readme-ov-file#ollama). Then, simply serve a localhost instance with your chosen port number (e.g. 80 in this example):
+    ```sh
+    OLLAMA_HOST=0.0.0.0:80 ollama serve
+    ```
   * A Huggingface API key. Follow this guide to setup a [user access token](https://huggingface.co/docs/hub/security-tokens)
 * You need the full contents of the *data* and *output* folder at hand. These are attached to the thesis hand-in and must be dropped in place in the corresponding location of this repository.
-* *Optional* - To re-run the Ragas testset generation, you need an [OpenAI API key](https://platform.openai.com/docs/api-reference/introduction). Note that nearly all of the API calls are stored in the Ragas cache shared with you in the data folder.
+* *Optional* - To re-run the Ragas testset generation, you need an [OpenAI API key](https://platform.openai.com/docs/api-reference/introduction). Note that many of the API calls are stored in the Ragas cache shared with you in the *data* folder.
 
 ### 💻 Installation
 
@@ -122,7 +126,7 @@ Select the correct installer for your environment from the examples below:
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ## 🤖 Usage
-The chatbot developed here can be used to interact with the entire Cognitive Science syllabus at Aarhus university. It was created to be more trustworthy than other bots by grounding its knowledge with a RAG database, supplying the user with uncertainty estimation scores, and providing the exact sources retrieved from the syllabus based on the users query. These steps provide more transparency during chatbot interactions and supports development of AI literacy among students.
+The chatbot developed here can be used to interact with the entire Cognitive Science syllabus at Aarhus university. It was created to be more trustworthy than other bots by grounding its knowledge with a RAG database, supplying the user with confidence scores, and providing the exact sources retrieved from the syllabus based on the users query. These steps provide more transparency during chatbot interactions and supports development of critical AI literacy among students.
 
 https://github.com/user-attachments/assets/f3170d7b-e5e1-424e-b383-2fbff2555962
 
@@ -130,21 +134,38 @@ https://github.com/user-attachments/assets/f3170d7b-e5e1-424e-b383-2fbff2555962
 __Note__ that the video was cut to remove thinking, the true speed of the chatbot response depends on the computational power available, but expect a higher latency regardless. 
 
 ### 🚀 Quick Start
-After following the installation guide, you can follow these steps to see the chatbot in action first!
+After following the installation guide, you can follow these steps to see the chatbot in action!
 
 1. Drop-in the *data* and *output* folders
    * Run a terminal command to make sure that you have read/write acess to the ChromaDB database
   ```bash
    chmod -R u+rw data/chroma_db
    ```
-3. Launch ChatUI or setup Huggingface
-4. Launch the chatbot interface:
+2. Launch ChatUI or Ollama or get your Huggingface API key
+3. Launch the chatbot interface:
   ```python
    streamlit run src/rag_chatbot/streamlit_app.py
    ```
-4. Input you provider API key in the Provider settings and start chatting!
-   * __Note:__ For the ChatUI link either paste the exact name you chose, or the link that can be copied directly from the ChatUI launcher page.
+4. Input you provider details in the Provider settings box and start chatting!
+   * For the ChatUI link either write the name you chose, or paste the link that can be copied directly from the ChatUI launcher page.
+   * For the Ollama server either write *localhost:[PORT-YOU-CHOSE]* or the full link *http://localhost:[PORT-YOU-CHOSE]*
 
+### Client Mode
+A script that runs the same RAG pipeline without going through the Streamlit app interface is also provided for convenience. To run this mode instead, simply follow steps 1. and 2. above (not necessary if you've already done them), and launch the script with:
+```python
+   uv run -m internal.run_cli
+```
+If nothing more is specificed, the script will ask for a query if none was provided as an argument and ask for an API url for default ChatUI if a key doesn't already exist in a .env file. The script will persist the key in a .env file for future runs automatically, unless asked not to.
+
+You can also use the arguments like this, choosing Ollama and opting not to save to the .env:
+```python
+   uv run -m internal.run_cli --provider Ollama --query "Explain what the neocortex is?" --no-save-env
+ ```
+Or like this, choosing Huggingface and saving to the .env per default:
+```python
+   uv run -m internal.run_cli -p Huggingface --q "Explain what the neocortex is?"
+ ```
+Again, if no .env file exists to load the API from, you will be prompted to input it.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
