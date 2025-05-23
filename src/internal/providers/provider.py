@@ -155,7 +155,7 @@ class GeneratorProvider:
 
 class HuggingFaceProvider(GeneratorProvider):
     """
-    Provider that uses the Hugging Face Inference API.
+    Provider that uses the Huggingface Inference API.
     Generation parameters (temperature, top_p, max_new_tokens) are passed during initialization.
     """
     def __init__(self, model:str, api_url: str, provider: str | None = None, 
@@ -218,7 +218,7 @@ class HuggingFaceProvider(GeneratorProvider):
             "top_p":       self.top_p,
             "max_tokens":  self.max_new_tokens,
         }
-        print("[HF] Payload:\n" + json.dumps(debug_payload, indent=2))
+        print("[Huggingface] Payload:\n" + json.dumps(debug_payload, indent=2))
         
         resp = self.client.chat_completion(
             messages,

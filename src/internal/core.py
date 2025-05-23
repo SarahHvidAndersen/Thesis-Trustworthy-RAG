@@ -285,9 +285,9 @@ def run_rag(
     # -------------------------------- credentials --------------------------------
     if provider_name == "ChatUI":
         api_key = api_key_override or ensure_provider_input("ChatUI")
-    elif provider == "Ollama":
+    elif provider_name == "Ollama":
         api_key = api_key_override or ensure_provider_input("Ollama")
-    elif provider in ("Huggingface", "HF"):
+    elif provider_name in ("Huggingface", "HF"):
         api_key = api_key_override or ensure_provider_input("Huggingface")
     else:
         raise ValueError(f"Unsupported provider: {provider}")

@@ -105,7 +105,7 @@ def ensure_provider_input(provider: str,
                 "Ollama localhost:PORT or full link "
                 "(e.g. localhost:11434 | http://localhost:11434): "),
         "Huggingface":     ("HF_API_KEY",
-                "Enter your Hugging Face API key (starts with hf_…): "),
+                "Enter your Huggingface API key (starts with hf_…): "),
     }
 
     env_name, prompt = defaults[p]

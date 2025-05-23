@@ -4,8 +4,8 @@ Minimal CLI for running the RAG pipeline.
 
 Examples
 --------
-$ python run_cli.py --provider ollama --query "Explain what the neocortex is?" --no-save-env
-$ python run_cli.py -p chatui                       # interactive query prompt
+$ uv run -m internal.run_cli --provider Ollama --query "Explain what the neocortex is?" --no-save-env
+$ uv run -m internal.run_cli -p Huggingface                       # interactive query prompt
 """
 from __future__ import annotations
 
@@ -19,6 +19,9 @@ from internal.core import run_rag, get_config
 from internal.logging_utils.csv_logger import initialize_csv, log_experiment
 from internal.providers.provider_utils import ensure_provider_input
 
+from dotenv import load_dotenv
+load_dotenv(override=True)
+
 # add user input arguments
 def parse_args() -> argparse.Namespace:
     cfg = get_config()
@@ -27,7 +30,7 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Run Retrieval-Augmented Generation from the CLI")
     parser.add_argument(
         "-p", "--provider",
-        choices=("chatui", "ollama", "hf", "huggingface"),
+        choices=("ChatUI", "Ollama", "Huggingface"),
         default=default_provider,
         help=f"Which backend to use (default: {default_provider})"
     )
