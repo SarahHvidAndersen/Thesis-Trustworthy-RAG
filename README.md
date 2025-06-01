@@ -40,6 +40,7 @@ The product was developed and designed as part of my thesis at Cognitive Science
     <li><a href="#-usage">Usage</a></li>
        <ul>
          <li><a href="#-quick-start">Quick Start</a></li>
+         <li><a href="#%EF%B8%8F-client-mode">Client Mode</a></li>
          <li><a href="#%EF%B8%8F-configuration">Configuration</a></li>
        </ul>
     <li><a href="#-chatui-setup">ChatUI Setup</a></li>
@@ -148,9 +149,9 @@ After following the installation guide, you can follow these steps to see the ch
    ```
 4. Input you provider details in the Provider settings box and start chatting!
    * For the ChatUI link either write the name you chose, or paste the link that can be copied directly from the ChatUI launcher page.
-   * For the Ollama server either write *localhost:[PORT-YOU-CHOSE]* or the full link *http://localhost:[PORT-YOU-CHOSE]*
+   * For the Ollama server either write *localhost:[PORT-YOU-CHOSE]* or the full link *h ttp://localhost:[PORT-YOU-CHOSE]*
 
-### Client Mode
+### ⚡️ Client Mode
 A script that runs the same RAG pipeline without going through the Streamlit app interface is also provided for convenience. To run this mode instead, simply follow steps 1. and 2. above (not necessary if you've already done them), and launch the script with:
 ```python
    uv run -m internal.run_cli
